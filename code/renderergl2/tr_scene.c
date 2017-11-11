@@ -445,6 +445,32 @@ void RE_EndScene()
 }
 
 /*
+==================
+RE_VfovToHfov
+
+Convert from vertical FOV to horizontal FOV when playing on a specific aspect
+ratio. FOV input and output are in degrees.
+==================
+*/
+static float RE_VfovToHfov( float vfov, float aspect )
+{
+	return 2.0 * DEGREES( atan( tan( RADIANS( vfov ) / 2.0 ) * aspect ) );
+}
+
+/*
+==================
+RE_VfovToHfov
+
+Convert from horizontal FOV to vertical FOV when playing on a specific aspect
+ratio. FOV input and output are in degrees.
+==================
+*/
+static float RE_HfovToVfov( float hfov, float aspect )
+{
+	return 2.0 * DEGREES( atan( tan( RADIANS( hfov ) / 2.0 ) / aspect ) );
+}
+
+/*
 @@@@@@@@@@@@@@@@@@@@@
 RE_RenderScene
 
@@ -545,8 +571,21 @@ void RE_RenderScene( const refdef_t *fd ) {
 	parms.viewportHeight = tr.refdef.height;
 	parms.isPortal = qfalse;
 
-	parms.fovX = tr.refdef.fov_x;
-	parms.fovY = tr.refdef.fov_y;
+	if (fd->rdflags & RDF_NOWORLDMODEL) {
+		// We don't adjust the FOV in the main-menu
+		parms.fovX = tr.refdef.fov_x;
+		parms.fovY = tr.refdef.fov_y;
+	} else {
+		// In Vert- FOV the horizontal FOV is unchanged, so we use it to
+		// calculate the vertical FOV that would be used if playing on
+		// 4:3 to get the Hor+ vertical FOV
+		parms.fovY = RE_HfovToVfov( tr.refdef.fov_x, 4.0 / 3.0 );
+
+		// Then we use the Hor+ vertical FOV to calculate our new
+		// expanded horizontal FOV
+		parms.fovX = RE_VfovToHfov( parms.fovY, (float)tr.refdef.width /
+				tr.refdef.height );
+	}
 	
 	parms.stereoFrame = tr.refdef.stereoFrame;
 
