@@ -23,9 +23,6 @@ endif
 ifndef BUILD_RENDERER_OPENGL2
   BUILD_RENDERER_OPENGL2=1
 endif
-ifndef BUILD_AUTOUPDATER  # DON'T build unless you mean to!
-  BUILD_AUTOUPDATER=0
-endif
 
 #############################################################################
 #
@@ -203,10 +200,6 @@ ifndef USE_YACC
 USE_YACC=0
 endif
 
-ifndef USE_AUTOUPDATER  # DON'T include unless you mean to!
-USE_AUTOUPDATER=0
-endif
-
 ifndef DEBUG_CFLAGS
 DEBUG_CFLAGS=-ggdb -O0
 endif
@@ -241,9 +234,6 @@ LBURGDIR=$(MOUNT_DIR)/tools/lcc/lburg
 Q3CPPDIR=$(MOUNT_DIR)/tools/lcc/cpp
 Q3LCCETCDIR=$(MOUNT_DIR)/tools/lcc/etc
 Q3LCCSRCDIR=$(MOUNT_DIR)/tools/lcc/src
-AUTOUPDATERSRCDIR=$(MOUNT_DIR)/autoupdater
-LIBTOMCRYPTSRCDIR=$(AUTOUPDATERSRCDIR)/rsa_tools/libtomcrypt-1.17
-TOMSFASTMATHSRCDIR=$(AUTOUPDATERSRCDIR)/rsa_tools/tomsfastmath-0.13.1
 LOKISETUPDIR=misc/setup
 NSISDIR=misc/nsis
 SDLHDIR=$(MOUNT_DIR)/SDL2
@@ -350,7 +340,6 @@ ifneq (,$(findstring "$(PLATFORM)", "linux" "gnu_kfreebsd" "kfreebsd-gnu" "gnu")
 
   THREAD_LIBS=-lpthread
   LIBS=-ldl -lm
-  AUTOUPDATER_LIBS += -ldl
 
   CLIENT_LIBS=$(SDL_LIBS)
   RENDERER_LIBS = $(SDL_LIBS)
@@ -578,7 +567,6 @@ ifdef MINGW
   endif
 
   LIBS= -lws2_32 -lwinmm -lpsapi
-  AUTOUPDATER_LIBS += -lwininet
 
   # clang 3.4 doesn't support this
   ifneq ("$(CC)", $(findstring "$(CC)", "clang" "clang++"))
@@ -819,7 +807,6 @@ ifeq ($(PLATFORM),irix64)
   SHLIBLDFLAGS=-shared
 
   LIBS=-ldl -lm -lgen
-  AUTOUPDATER_LIBS += -ldl
 
   # FIXME: The X libraries probably aren't necessary?
   CLIENT_LIBS=-L/usr/X11/$(LIB) $(SDL_LIBS) \
@@ -875,7 +862,6 @@ ifeq ($(PLATFORM),sunos)
 
   THREAD_LIBS=-lpthread
   LIBS=-lsocket -lnsl -ldl -lm
-  AUTOUPDATER_LIBS += -ldl
 
   BOTCFLAGS=-O0
 
@@ -937,16 +923,6 @@ ifneq ($(BUILD_CLIENT),0)
       TARGETS += $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT)
     endif
   endif
-endif
-
-ifneq ($(BUILD_AUTOUPDATER),0)
-  # PLEASE NOTE that if you run an exe on Windows Vista or later
-  #  with "setup", "install", "update" or other related terms, it
-  #  will unconditionally trigger a UAC prompt, and in the case of
-  #  ioq3 calling CreateProcess() on it, it'll just fail immediately.
-  #  So don't call this thing "autoupdater" here!
-  AUTOUPDATER_BIN := autosyncerator$(FULLBINEXT)
-  TARGETS += $(B)/$(AUTOUPDATER_BIN)
 endif
 
 ifeq ($(USE_OPENAL),1)
@@ -1047,15 +1023,6 @@ ifeq ($(USE_FREETYPE),1)
 
   BASE_CFLAGS += -DBUILD_FREETYPE $(FREETYPE_CFLAGS)
   RENDERER_LIBS += $(FREETYPE_LIBS)
-endif
-
-ifeq ($(USE_AUTOUPDATER),1)
-  CLIENT_CFLAGS += -DUSE_AUTOUPDATER -DAUTOUPDATER_BIN=\\\"$(AUTOUPDATER_BIN)\\\"
-  SERVER_CFLAGS += -DUSE_AUTOUPDATER -DAUTOUPDATER_BIN=\\\"$(AUTOUPDATER_BIN)\\\"
-endif
-
-ifeq ($(BUILD_AUTOUPDATER),1)
-  AUTOUPDATER_LIBS += $(LIBTOMCRYPTSRCDIR)/libtomcrypt.a $(TOMSFASTMATHSRCDIR)/libtfm.a
 endif
 
 ifeq ("$(CC)", $(findstring "$(CC)", "clang" "clang++"))
@@ -1240,9 +1207,6 @@ endif
 	@echo ""
 	@echo "  CLIENT_LIBS:"
 	$(call print_wrapped, $(CLIENT_LIBS))
-	@echo ""
-	@echo "  AUTOUPDATER_LIBS:"
-	$(call print_wrapped, $(AUTOUPDATER_LIBS))
 	@echo ""
 	@echo "  Output:"
 	$(call print_list, $(NAKED_TARGETS))
@@ -1430,26 +1394,6 @@ $(B)/tools/asm/%.o: $(Q3ASMDIR)/%.c
 $(Q3ASM): $(Q3ASMOBJ)
 	$(echo_cmd) "LD $@"
 	$(Q)$(TOOLS_CC) $(TOOLS_CFLAGS) $(TOOLS_LDFLAGS) -o $@ $^ $(TOOLS_LIBS)
-
-
-#############################################################################
-# AUTOUPDATER
-#############################################################################
-
-define DO_AUTOUPDATER_CC
-$(echo_cmd) "AUTOUPDATER_CC $<"
-$(Q)$(CC) $(CFLAGS) -I$(LIBTOMCRYPTSRCDIR)/src/headers -I$(TOMSFASTMATHSRCDIR)/src/headers $(CURL_CFLAGS) -o $@ -c $<
-endef
-
-Q3AUTOUPDATEROBJ = \
-  $(B)/autoupdater/autoupdater.o
-
-$(B)/autoupdater/%.o: $(AUTOUPDATERSRCDIR)/%.c
-	$(DO_AUTOUPDATER_CC)
-
-$(B)/$(AUTOUPDATER_BIN): $(Q3AUTOUPDATEROBJ)
-	$(echo_cmd) "AUTOUPDATER_LD $@"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(Q3AUTOUPDATEROBJ) $(AUTOUPDATER_LIBS)
 
 
 #############################################################################
