@@ -563,6 +563,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		re.AddAdditiveLightToScene( VMA(1), VMF(2), VMF(3), VMF(4), VMF(5) );
 		return 0;
 	case CG_R_RENDERSCENE:
+		cl.cgameFovX = ((refdef_t *)VMA(1))->fov_x;
 		re.RenderScene( VMA(1) );
 		return 0;
 	case CG_R_SETCOLOR:
@@ -598,15 +599,15 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 	case CG_MEMORY_REMAINING:
 		return Hunk_MemoryRemaining();
-  case CG_KEY_ISDOWN:
+	case CG_KEY_ISDOWN:
 		return Key_IsDown( args[1] );
-  case CG_KEY_GETCATCHER:
+	case CG_KEY_GETCATCHER:
 		return Key_GetCatcher();
-  case CG_KEY_SETCATCHER:
+	case CG_KEY_SETCATCHER:
 		// Don't allow the cgame module to close the console
 		Key_SetCatcher( args[1] | ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) );
-    return 0;
-  case CG_KEY_GETKEY:
+		return 0;
+	case CG_KEY_GETKEY:
 		return Key_GetKey( VMA(1) );
 
 
