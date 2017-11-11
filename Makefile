@@ -103,14 +103,6 @@ ifndef SERVERBIN
 SERVERBIN=yuoaded
 endif
 
-ifndef MISSIONPACK
-MISSIONPACK=missionpack
-endif
-
-ifndef MISSIONPACK_CFLAGS
-MISSIONPACK_CFLAGS=-DMISSIONPACK
-endif
-
 ifndef COPYDIR
 COPYDIR="/usr/local/games/quake3"
 endif
@@ -1139,18 +1131,6 @@ endef
 ifeq ($(GENERATE_DEPENDENCIES),1)
   DO_QVM_DEP=cat $(@:%.o=%.d) | sed -e 's/\.o/\.asm/g' >> $(@:%.o=%.d)
 endif
-
-define DO_SHLIB_CC_MISSIONPACK
-$(echo_cmd) "SHLIB_CC_MISSIONPACK $<"
-$(Q)$(CC) $(MISSIONPACK_CFLAGS) $(SHLIBCFLAGS) $(CFLAGS) $(OPTIMIZEVM) -o $@ -c $<
-$(Q)$(DO_QVM_DEP)
-endef
-
-define DO_UI_CC_MISSIONPACK
-$(echo_cmd) "UI_CC_MISSIONPACK $<"
-$(Q)$(CC) $(MISSIONPACK_CFLAGS) -DUI $(SHLIBCFLAGS) $(CFLAGS) $(OPTIMIZEVM) -o $@ -c $<
-$(Q)$(DO_QVM_DEP)
-endef
 
 define DO_AS
 $(echo_cmd) "AS $<"
