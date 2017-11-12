@@ -2,8 +2,7 @@
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
 
-This file is part of Quake III Arena source code.
-
+This file is part of Quake III Arena source code.  
 Quake III Arena source code is free software; you can redistribute it
 and/or modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation; either version 2 of the License,
@@ -23,6 +22,167 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "q_shared.h"
 #include "qcommon.h"
+
+// get the last index of undobuf_t
+#define UNDOBUF_END(u) (((u).start + (u).size) % MAX_UNDO_LEVELS)
+
+// identify different commands and how they should how up in undo history
+typedef enum {
+	// commands not to put into undo history
+	UNDO_MODE_SKIP = 0x1000,
+	UNDO_NONE,
+	UNDO_MOVE_BACK_CHAR,
+	UNDO_MOVE_FORWARD_CHAR,
+	UNDO_MOVE_BACK_WORD,
+	UNDO_MOVE_FORWARD_WORD,
+	UNDO_MOVE_LINE_START,
+	UNDO_MOVE_LINE_END,
+
+	// commands to put in undo history with repetition
+	UNDO_MODE_REPEAT = 0x2000,
+	UNDO_RUBOUT_LINE,
+	UNDO_DELETE_LINE,
+	UNDO_DELETE_WORD,
+	UNDO_RUBOUT_WORD,
+	UNDO_RUBOUT_LONG_WORD,
+	UNDO_TOUPPER_WORD,
+	UNDO_TOLOWER_WORD,
+	UNDO_CAPITALIZE_WORD,
+	UNDO_PASTE,
+	UNDO_TRANSPOSE,
+
+	// commands that if repeated will be concatenated to one entry in undo
+	// history
+	UNDO_MODE_CONCAT = 0x3000,
+	UNDO_INSERT_CHAR,      		// insert alpha character
+	UNDO_REPLACE_CHAR,     		// replace with alpha character
+	UNDO_DELETE_CHAR,			// delete alpha character
+	UNDO_RUBOUT_CHAR,			// backspace over alpha character
+	UNDO_AUTOCOMPLETE,      	// tab
+
+	// bitmask to check what history mode a command has
+	UNDO_MODEBITS = 0xF000
+} undocmd_t;
+
+/*
+=================
+Field_MoveTo
+
+Moves the cursor to position
+=================
+*/
+static void Field_MoveTo( field_t *edit, int to )
+{
+	int len = strlen( edit->buffer );
+
+	if ( to < 0 )
+		to = 0;
+	else if ( to > len )
+		to = len;
+
+	edit->cursor = to;
+
+	// adjust scroll
+	if ( edit->cursor < edit->scroll ) {
+		edit->scroll = edit->cursor;
+	} else if ( edit->cursor >= edit->scroll + edit->widthInChars && edit->cursor <= len ) {
+		edit->scroll = edit->cursor - edit->widthInChars + 1;
+	}
+}
+
+/*
+==================
+Field_DeleteTo
+
+Deletes text from the cursor to position
+==================
+*/
+static void Field_DeleteTo( field_t *edit, int to )
+{
+	int cur = edit->cursor;
+	int len = strlen( edit->buffer );
+
+	if ( to < 0 )
+		to = 0;
+	else if ( to > len )
+		to = len;
+
+	if ( to < cur ) {
+		// delete backwards and adjust cursor and scroll
+		memmove( edit->buffer + to, edit->buffer + cur, len - cur + 1);
+		Field_MoveTo( edit, to );
+	} else {
+		// delete forward
+		memmove( edit->buffer + cur, edit->buffer + to, len - to + 1);
+	}
+}
+
+/*
+================
+Field_PushUndo
+
+Save the field state before command so it can be undone later. How the field
+state is saved depends on the command entered.
+================
+*/
+static void Field_PushUndo( field_t *edit, undo_cmd_t cmd )
+{
+	int end;
+
+	// if the field doesn't have undo buffer
+	if ( !edit->undobuf )
+		return;
+
+	if ( (cmd & UNDO_MODEBITS) == UNDO_MODE_SKIP ) {
+		goto ret; // command shouldn't be put into history
+	}
+
+	if ( (cmd & UNDO_MODEBITS) == UNDO_MODE_CONCAT ) {
+		// command should be put into history but without duplication
+		if ( cmd == edit->undobuf->lastcmd )
+			goto ret; // duplication
+	}
+
+	end = UNDOBUF_END( *edit->undobuf );
+
+	edit->undobuf->cursors[end] = edit->cursor;
+	strcpy( edit->undobuf->buffers[end], edit->buffer );
+
+	if ( edit->undobuf->size < MAX_UNDO_LEVELS )
+		edit->undobuf->size++;
+	else
+		edit->undobuf->start = (edit->undobuf->start + 1) % MAX_UNDO_LEVELS;
+
+ret:
+	edit->undobuf->lastcmd = cmd;
+}
+
+/*
+================
+Field_PopUndo
+
+Restore the fields state to the last saved state
+================
+*/
+static void Field_PopUndo( field_t *edit )
+{
+	int end;
+
+	// if the field doesn't have undo buffer
+	if ( !edit->undobuf )
+		return;
+
+	if ( edit->undobuf->size == 0 )
+		return; // nothing to restore
+
+	edit->undobuf->size--;
+	end = UNDOBUF_END( *edit->undobuf );
+
+	strcpy( edit->buffer, edit->undobuf->buffers[end] );
+	Field_MoveTo( edit, edit->undobuf->cursors[end] );
+
+	edit->undobuf->lastcmd = UNDO_NONE;
+}
 
 /*
 ===========================================
@@ -416,4 +576,110 @@ void Field_CompletePlayerName( const char **names, int nameCount )
 	{
 
 	}
+}
+
+/*
+===================
+Returns the position back to start of word
+
+Words are delimited by space, numbers, and punctuation
+===================
+*/
+static int Field_BackWord( field_t *edit )
+{
+	int i = edit->cursor;
+
+	while ( i > 0 && !isalpha( edit->buffer[i - 1] ) )
+		i--;
+
+	while ( i > 0 && isalpha( edit->buffer[i - 1] ) )
+		i--;
+
+	return i;
+}
+
+/*
+===================
+Field_ForwardWord
+
+Returns the position forward to end of word
+
+Words are delimited by space, numbers, and punctuation
+===================
+*/
+static int Field_ForwardWord( field_t *edit )
+{
+	int i = edit->cursor;
+
+	while ( edit->buffer[i] && !isalpha( edit->buffer[i] ) )
+		i++;
+
+	while ( isalpha( edit->buffer[i] ) )
+		i++;
+
+	return i;
+}
+
+/*
+==================
+Field_BackLongWord
+
+Returns the position back to start of "long word"
+
+Long words are only delimited by space
+==================
+*/
+static int Field_BackLongWord( field_t *edit )
+{
+	int i = edit->cursor;
+
+	while ( i > 0 && isspace( edit->buffer[i - 1] ) )
+		i--;
+
+	while ( i > 0 && !isspace( edit->buffer[i - 1] ) )
+		i--;
+
+	return i;
+}
+
+/*
+===========================================
+Movement functions
+===========================================
+*/
+
+void Field_MoveForwardChar( field_t *edit )
+{
+	Field_PushUndo( edit, UNDO_MOVE_FORWARD_CHAR );
+	Field_MoveTo( edit, edit->cursor + 1 );
+}
+
+void Field_MoveBackChar( field_t *edit )
+{
+	Field_PushUndo( edit, UNDO_MOVE_BACK_CHAR );
+	Field_MoveTo( edit, edit->cursor - 1 );
+}
+
+void Field_MoveForwardWord( field_t *edit )
+{
+	Field_PushUndo( edit, UNDO_MOVE_FORWARD_WORD );
+	Field_MoveTo( edit, Field_ForwardWord( edit ) );
+}
+
+void Field_MoveBackWord( field_t *edit )
+{
+	Field_PushUndo( edit, UNDO_MOVE_BACK_WORD );
+	Field_MoveTo( edit, Field_BackWord( edit ) );
+}
+
+void Field_MoveLineStart( field_t *edit )
+{
+	Field_PushUndo( edit, UNDO_MOVE_LINE_START );
+	Field_MoveTo( edit, 0 );
+}
+
+void Field_MoveLineEnd( field_t *edit )
+{
+	Field_PushUndo( edit, UNDO_MOVE_LINE_END );
+	Field_MoveTo( edit, strlen( edit->buffer ) );
 }

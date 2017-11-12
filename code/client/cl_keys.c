@@ -474,23 +474,27 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 			break;
 
 		case K_RIGHTARROW:
-			if ( edit->cursor < len ) {
-				edit->cursor++;
+			if ( keys[K_CTRL].down ) {
+				Field_MoveForwardWord( edit );
+			} else {
+				Field_MoveForwardChar( edit );
 			}
 			break;
 
 		case K_LEFTARROW:
-			if ( edit->cursor > 0 ) {
-				edit->cursor--;
+			if ( keys[K_CTRL].down ) {
+				Field_MoveBackWord( edit );
+			} else {
+				Field_MoveBackChar( edit );
 			}
 			break;
 
 		case K_HOME:
-			edit->cursor = 0;
+			Field_MoveLineStart( edit );
 			break;
 
 		case K_END:
-			edit->cursor = len;
+			Field_MoveLineEnd( edit );
 			break;
 
 		case K_INS:
@@ -517,19 +521,19 @@ Field_CharEvent
 void Field_CharEvent( field_t *edit, int ch ) {
 	int		len;
 
-	if ( ch == 'v' - 'a' + 1 ) {	// ctrl-v is paste
+	if ( ch == CTRL( 'V' ) ) {	// ^V pastes
 		Field_Paste( edit );
 		return;
 	}
 
-	if ( ch == 'c' - 'a' + 1 ) {	// ctrl-c clears the field
+	if ( ch == CTRL( 'C' ) ) {	// ^C clears the field
 		Field_Clear( edit );
 		return;
 	}
 
 	len = strlen( edit->buffer );
 
-	if ( ch == 'h' - 'a' + 1 )	{	// ctrl-h is backspace
+	if ( ch == CTRL( 'H' ) )	{	// ^H is backspace
 		if ( edit->cursor > 0 ) {
 			memmove( edit->buffer + edit->cursor - 1, 
 				edit->buffer + edit->cursor, len + 1 - edit->cursor );
@@ -542,20 +546,17 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'a' - 'a' + 1 ) {	// ctrl-a is home
-		edit->cursor = 0;
-		edit->scroll = 0;
+	if ( ch == CTRL( 'A' ) ) {	// ^A is home
+		Field_MoveLineStart( edit );
 		return;
 	}
 
-	if ( ch == 'e' - 'a' + 1 ) {	// ctrl-e is end
-		edit->cursor = len;
-		edit->scroll = edit->cursor - edit->widthInChars;
+	if ( ch == CTRL( 'E' ) ) {	// ^E is end
+		Field_MoveLineEnd( edit );
 		return;
 	}
 
-	//
-	// ignore any other non printable chars
+	// // ignore any other non printable chars
 	//
 	if ( ch < 32 ) {
 		return;

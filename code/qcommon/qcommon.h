@@ -749,12 +749,34 @@ Edit fields and command line history/completion
 */
 
 #define	MAX_EDIT_LINE	256
+#define	MAX_UNDO_LEVELS	16
+#define	MAX_YANK_LEVELS	8
+
+typedef int undo_cmd_t;
+
+typedef struct {
+	undo_cmd_t lastcmd;
+	int start;
+	int size;
+	int cursors[MAX_UNDO_LEVELS];
+	char buffers[MAX_UNDO_LEVELS][MAX_EDIT_LINE];
+} undobuf_t;
+
+typedef struct {
+	int start;
+	int size;
+	char buffers[MAX_YANK_LEVELS][MAX_EDIT_LINE];
+} yankbuf_t;
+
 typedef struct {
 	int		cursor;
 	int		scroll;
 	int		widthInChars;
 	char	buffer[MAX_EDIT_LINE];
+	undobuf_t	*undobuf;
+	yankbuf_t	*yankbuf;
 } field_t;
+
 
 void Field_Clear( field_t *edit );
 void Field_AutoComplete( field_t *edit );
@@ -764,6 +786,13 @@ void Field_CompleteFilename( const char *dir,
 void Field_CompleteCommand( char *cmd,
 		qboolean doCommands, qboolean doCvars );
 void Field_CompletePlayerName( const char **names, int count );
+
+void Field_MoveForwardChar( field_t *edit );
+void Field_MoveBackChar( field_t *edit );
+void Field_MoveForwardWord( field_t *edit );
+void Field_MoveBackWord( field_t *edit );
+void Field_MoveLineStart( field_t *edit );
+void Field_MoveLineEnd( field_t *edit );
 
 /*
 ==============================================================

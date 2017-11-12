@@ -209,6 +209,9 @@ typedef int		sfxHandle_t;
 typedef int		fileHandle_t;
 typedef int		clipHandle_t;
 
+// get ascii control character for character
+#define CTRL( a ) (toupper( a ) - 'A' + 1)
+
 // convert angle from radians to degrees
 #define DEGREES( a ) ((a) * 180.0 / M_PI)
 
