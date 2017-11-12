@@ -1419,6 +1419,7 @@ Q3OBJ = \
   $(B)/client/cm_test.o \
   $(B)/client/cm_trace.o \
   \
+  $(B)/client/field.o \
   $(B)/client/cmd.o \
   $(B)/client/common.o \
   $(B)/client/cvar.o \
@@ -1984,6 +1985,7 @@ Q3DOBJ = \
   $(B)/ded/cm_polylib.o \
   $(B)/ded/cm_test.o \
   $(B)/ded/cm_trace.o \
+  $(B)/ded/field.o \
   $(B)/ded/cmd.o \
   $(B)/ded/common.o \
   $(B)/ded/cvar.o \
