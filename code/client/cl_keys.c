@@ -33,8 +33,11 @@ int			nextHistoryLine;		// the last line in the history buffer, not masked
 int			historyLine;	// the line being displayed from history buffer
 							// will be <= nextHistoryLine
 
-field_t		g_consoleField;
-field_t		chatField;
+undobuf_t	g_consoleUndobuf;
+field_t		g_consoleField = { .undobuf = &g_consoleUndobuf };
+
+undobuf_t	chatUndobuf;
+field_t		chatField = { .undobuf = &chatUndobuf };
 qboolean	chat_team;
 
 int			chat_playerNum;
@@ -519,14 +522,30 @@ Field_CharEvent
 ==================
 */
 void Field_CharEvent( field_t *edit, int ch ) {
-	int		len;
+	// The SDL2 version of sdl_input.c doesn't generate CTRL codes for
+	// non-alpha characters. So we generate ASCII CTRL codes here for key
+	// combinations to use in shortcuts.
+	if ( keys[K_CTRL].down ) {
+		switch ( ch ) {
+		case '_':
+		case '-':
+		case '/':
+		case '7':
+			ch = CTRL('_');
+			break;
+		case '8':
+			ch = CTRL('H');
+			break;
+		}
+	}
 
 	if ( ch == CTRL( 'V' ) ) {	// ^V pastes
 		Field_Paste( edit );
 		return;
 	}
 
-	if ( ch == CTRL( 'Z' ) || ch == CTRL( '_' ) ) {	// ^Z and ^_ undoes
+	// ^Z and ^_ undoes
+	if ( ch == CTRL( 'Z' ) || ch == CTRL( '_' ) ) {
 		Field_Undo( edit );
 		return;
 	}
@@ -584,8 +603,6 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		Field_RuboutLongWord( edit );
 	}
 
-	len = strlen( edit->buffer );
-
 	if ( ch == CTRL( 'H' ) )	{	// ^H is backspace
 		if ( (keys[K_BACKSPACE].down && keys[K_CTRL].down) ||
 			keys[K_ALT].down) {
@@ -617,36 +634,15 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	// // ignore any other non printable chars
-	//
+	// ignore any other non printable chars
 	if ( ch < 32 ) {
 		return;
 	}
 
 	if ( key_overstrikeMode ) {	
-		// - 2 to leave room for the leading slash and trailing \0
-		if ( edit->cursor == MAX_EDIT_LINE - 2 )
-			return;
-		edit->buffer[edit->cursor] = ch;
-		edit->cursor++;
-	} else {	// insert mode
-		// - 2 to leave room for the leading slash and trailing \0
-		if ( len == MAX_EDIT_LINE - 2 ) {
-			return; // all full
-		}
-		memmove( edit->buffer + edit->cursor + 1, 
-			edit->buffer + edit->cursor, len + 1 - edit->cursor );
-		edit->buffer[edit->cursor] = ch;
-		edit->cursor++;
-	}
-
-
-	if ( edit->cursor >= edit->widthInChars ) {
-		edit->scroll++;
-	}
-
-	if ( edit->cursor == len + 1) {
-		edit->buffer[edit->cursor] = 0;
+		Field_ReplaceChar( edit, ch );
+	} else {
+		Field_InsertChar( edit, ch );
 	}
 }
 

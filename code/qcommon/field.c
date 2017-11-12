@@ -2,7 +2,7 @@
 ===========================================================================
 Copyright (C) 1999-2005 Id Software, Inc.
 
-This file is part of Quake III Arena source code.  
+This file is part of Quake III Arena source code.
 Quake III Arena source code is free software; you can redistribute it
 and/or modify it under the terms of the GNU General Public License as
 published by the Free Software Foundation; either version 2 of the License,
@@ -54,11 +54,11 @@ typedef enum {
 	// commands that if repeated will be concatenated to one entry in undo
 	// history
 	UNDO_MODE_CONCAT = 0x3000,
-	UNDO_INSERT_CHAR,      		// insert alpha character
-	UNDO_REPLACE_CHAR,     		// replace with alpha character
-	UNDO_DELETE_CHAR,			// delete alpha character
-	UNDO_RUBOUT_CHAR,			// backspace over alpha character
-	UNDO_AUTOCOMPLETE,      	// tab
+	UNDO_INSERT_CHAR,	// insert alpha character
+	UNDO_REPLACE_CHAR,	// replace with alpha character
+	UNDO_DELETE_CHAR,	// delete alpha character
+	UNDO_RUBOUT_CHAR,	// backspace over alpha character
+	UNDO_AUTOCOMPLETE,	// tab
 
 	// bitmask to check what history mode a command has
 	UNDO_MODEBITS = 0xF000
@@ -218,9 +218,11 @@ Field_Clear
 ==================
 */
 void Field_Clear( field_t *edit ) {
-  memset(edit->buffer, 0, MAX_EDIT_LINE);
+	memset(edit->buffer, 0, MAX_EDIT_LINE);
 	edit->cursor = 0;
 	edit->scroll = 0;
+	if (edit->undobuf)
+		edit->undobuf->size = 0;
 }
 
 static const char *completionString;
@@ -432,7 +434,7 @@ void Field_CompleteCommand( char *cmd,
 		if( ( p = Field_FindFirstSeparator( cmd ) ) )
 			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
 		else
-			Cmd_CompleteArgument( baseCmd, cmd, completionArgument ); 
+			Cmd_CompleteArgument( baseCmd, cmd, completionArgument );
 	}
 	else
 	{
@@ -472,8 +474,8 @@ Perform Tab expansion
 */
 void Field_AutoComplete( field_t *field )
 {
+	Field_PushUndo( field, UNDO_AUTOCOMPLETE );
 	completionField = field;
-
 	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
 }
 
@@ -506,7 +508,7 @@ static qboolean Field_CompletePlayerNameFinal( qboolean whitespace )
 	return qfalse;
 }
 
-static void Name_PlayerNameCompletion( const char **names, int nameCount, void(*callback)(const char *s) ) 
+static void Name_PlayerNameCompletion( const char **names, int nameCount, void(*callback)(const char *s) )
 {
 	int i;
 
@@ -535,13 +537,13 @@ void Field_CompletePlayerName( const char **names, int nameCount )
 	//allow to tab player names
 	//if full player name switch to next player name
 	if( completionString[0] != '\0'
-		&& Q_stricmp( shortestMatch, completionString ) == 0 
-		&& nameCount > 1 ) 
+		&& Q_stricmp( shortestMatch, completionString ) == 0
+		&& nameCount > 1 )
 	{
 		int i;
 
 		for( i = 0; i < nameCount; i++ ) {
-			if( Q_stricmp( names[ i ], completionString ) == 0 ) 
+			if( Q_stricmp( names[ i ], completionString ) == 0 )
 			{
 				i++;
 				if( i >= nameCount )
@@ -558,7 +560,7 @@ void Field_CompletePlayerName( const char **names, int nameCount )
 	if( matchCount > 1 )
 	{
 		Com_Printf( "]%s\n", completionField->buffer );
-		
+
 		Name_PlayerNameCompletion( names, nameCount, PrintMatches );
 	}
 
@@ -796,4 +798,33 @@ void Field_MakeWordCapitalized( field_t *edit )
 		Field_MakeUpperTo( edit, Field_BackWord( edit ) );
 		edit->cursor++;
 		Field_MakeLowerTo( edit, Field_ForwardWord( edit ) );
+}
+
+void Field_InsertChar( field_t *edit, char ch )
+{
+
+	Field_PushUndo( edit, UNDO_INSERT_CHAR );
+
+	size_t len = strlen( edit->buffer );
+
+	// - 2 to leave room for the leading slash and trailing \0
+	if ( len == MAX_EDIT_LINE - 2 ) {
+		return; // all full
+	}
+	memmove( edit->buffer + edit->cursor + 1,
+		edit->buffer + edit->cursor, len + 1 - edit->cursor );
+	edit->buffer[edit->cursor] = ch;
+
+	Field_MoveTo( edit, edit->cursor + 1 );
+}
+
+void Field_ReplaceChar( field_t *edit, char ch )
+{
+	Field_PushUndo( edit, UNDO_REPLACE_CHAR );
+
+	// - 2 to leave room for the leading slash and trailing \0
+	if ( edit->cursor == MAX_EDIT_LINE - 2 )
+		return;
+	edit->buffer[edit->cursor] = ch;
+	Field_MoveTo( edit, edit->cursor + 1 );
 }

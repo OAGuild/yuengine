@@ -810,6 +810,9 @@ void Field_MakeWordUpper( field_t *edit );
 void Field_MakeWordLower( field_t *edit );
 void Field_MakeWordCapitalized( field_t *edit );
 
+void Field_InsertChar( field_t *edit, char ch );
+void Field_ReplaceChar( field_t *edit, char ch );
+
 /*
 ==============================================================
 

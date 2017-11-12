@@ -1056,10 +1056,12 @@ static void IN_ProcessEvents( void )
 								Com_QueueEvent( in_eventTime, SE_KEY, K_CONSOLE, qfalse, 0, NULL );
 							}
 							else
+							{
 								Com_QueueEvent( in_eventTime, SE_CHAR, utf32, 0, 0, NULL );
+							}
 						}
-          }
-        }
+					}
+				}
 				break;
 
 			case SDL_MOUSEMOTION:
