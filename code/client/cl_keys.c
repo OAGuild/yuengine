@@ -526,23 +526,84 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	if ( ch == CTRL( 'Z' ) || ch == CTRL( '_' ) ) {	// ^Z and ^_ undoes
+		Field_Undo( edit );
+		return;
+	}
+
 	if ( ch == CTRL( 'C' ) ) {	// ^C clears the field
 		Field_Clear( edit );
 		return;
 	}
 
+	if ( toupper(ch) == 'U' && keys[K_ALT].down ) {
+		// alt-u makes word uppercase
+		Field_MakeWordUpper( edit );
+		return;
+	}
+
+	if ( toupper(ch) == 'L' && keys[K_ALT].down ) {
+		// alt-l makes word lowercase
+		Field_MakeWordLower( edit );
+		return;
+	}
+
+	if ( toupper(ch) == 'C' && keys[K_ALT].down ) {
+		// alt-c makes word capitalized
+		Field_MakeWordCapitalized( edit );
+		return;
+	}
+
+	if ( ch == CTRL( 'T' ) ) {	// ^T transposes chars
+		Field_TransposeChars( edit );
+		return;
+	}
+
+	if ( ch == CTRL( 'F' ) ) {	// ^F moves to next char
+		Field_MoveForwardChar( edit );
+		return;
+	}
+
+	if ( ch == CTRL( 'B' ) ) {	// ^B moves to previous char
+		Field_MoveBackChar( edit );
+		return;
+	}
+
+	if ( ch == CTRL( 'D' ) ) {	// ^D deletes char
+		Field_DeleteChar( edit );
+		return;
+	}
+
+	if ( toupper(ch) == 'D' && keys[K_ALT].down) {
+		// alt-d deletes to end of word
+		Field_DeleteWord( edit );
+		return;
+	}
+
+	if ( ch == CTRL( 'W' ) ) {	// ^W rubs out long word
+		Field_RuboutLongWord( edit );
+	}
+
 	len = strlen( edit->buffer );
 
 	if ( ch == CTRL( 'H' ) )	{	// ^H is backspace
-		if ( edit->cursor > 0 ) {
-			memmove( edit->buffer + edit->cursor - 1, 
-				edit->buffer + edit->cursor, len + 1 - edit->cursor );
-			edit->cursor--;
-			if ( edit->cursor < edit->scroll )
-			{
-				edit->scroll--;
-			}
+		if ( (keys[K_BACKSPACE].down && keys[K_CTRL].down) ||
+			keys[K_ALT].down) {
+			// ctrl-bksp or alt-bksp deletes to beginning word
+			Field_RuboutWord( edit );
+		} else {
+			Field_RuboutChar( edit );
 		}
+		return;
+	}
+
+	if ( ch == CTRL( 'U' ) ) {	// ^U deletes to beginning
+		Field_RuboutLine( edit );
+		return;
+	}
+
+	if ( ch == CTRL( 'K' ) ) {	// ^K deletes to end
+		Field_DeleteLine( edit );
 		return;
 	}
 

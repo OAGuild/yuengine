@@ -49,7 +49,7 @@ typedef enum {
 	UNDO_TOLOWER_WORD,
 	UNDO_CAPITALIZE_WORD,
 	UNDO_PASTE,
-	UNDO_TRANSPOSE,
+	UNDO_TRANSPOSE_CHARS,
 
 	// commands that if repeated will be concatenated to one entry in undo
 	// history
@@ -100,7 +100,7 @@ Deletes text from the cursor to position
 static void Field_DeleteTo( field_t *edit, int to )
 {
 	int cur = edit->cursor;
-	int len = strlen( edit->buffer );
+	size_t len = strlen( edit->buffer );
 
 	if ( to < 0 )
 		to = 0;
@@ -159,30 +159,52 @@ ret:
 
 /*
 ================
-Field_PopUndo
+Field_MakeUpperTo
 
-Restore the fields state to the last saved state
+Makes text uppercase from the cursor to position
 ================
 */
-static void Field_PopUndo( field_t *edit )
+static void Field_MakeUpperTo( field_t *edit, int to )
 {
-	int end;
+	int cur = edit->cursor;
+	int len = strlen( edit->buffer );
+	int i;
 
-	// if the field doesn't have undo buffer
-	if ( !edit->undobuf )
-		return;
+	if ( to < 0 )
+		to = 0;
+	else if ( to > len )
+		to = len;
 
-	if ( edit->undobuf->size == 0 )
-		return; // nothing to restore
-
-	edit->undobuf->size--;
-	end = UNDOBUF_END( *edit->undobuf );
-
-	strcpy( edit->buffer, edit->undobuf->buffers[end] );
-	Field_MoveTo( edit, edit->undobuf->cursors[end] );
-
-	edit->undobuf->lastcmd = UNDO_NONE;
+	for ( i = cur; i != to; to < cur ? i-- : i++ ) {
+		edit->buffer[i] = toupper( edit->buffer[i] );
+	}
+	Field_MoveTo( edit, to );
 }
+
+/*
+================
+Field_MakeLowerTo
+
+Makes text lowercase from the cursor to position
+================
+*/
+static void Field_MakeLowerTo( field_t *edit, size_t to )
+{
+	int cur = edit->cursor;
+	int len = strlen(edit->buffer);
+	int i;
+
+	if ( to < 0 )
+		to = 0;
+	else if ( to > len )
+		to = len;
+
+	for ( i = cur; i != to; to < cur ? i-- : i++ ) {
+		edit->buffer[i] = tolower( edit->buffer[i] );
+	}
+	Field_MoveTo( edit, to );
+}
+
 
 /*
 ===========================================
@@ -493,37 +515,6 @@ static void Name_PlayerNameCompletion( const char **names, int nameCount, void(*
 	}
 }
 
-qboolean Com_FieldStringToPlayerName( char *name, int length, const char *rawname )
-{
-	char		hex[5];
-	int			i;
-	int			ch;
-
-	if( name == NULL || rawname == NULL )
-		return qfalse;
-
-	if( length <= 0 )
-		return qtrue;
-
-	for( i = 0; *rawname && i + 1 <= length; rawname++, i++ ) {
-		if( *rawname == '\\' ) {
-			Q_strncpyz( hex, rawname + 1, sizeof(hex) );
-			ch = Com_HexStrToInt( hex );
-			if( ch > -1 ) {
-				name[i] = ch;
-				rawname += 4; //hex string length, 0xXX
-			} else {
-				name[i] = *rawname;
-			}
-		} else {
-			name[i] = *rawname;
-		}
-	}
-	name[i] = '\0';
-
-	return qtrue;
-}
-
 void Field_CompletePlayerName( const char **names, int nameCount )
 {
 	qboolean whitespace;
@@ -682,4 +673,127 @@ void Field_MoveLineEnd( field_t *edit )
 {
 	Field_PushUndo( edit, UNDO_MOVE_LINE_END );
 	Field_MoveTo( edit, strlen( edit->buffer ) );
+}
+
+/*
+===========================================
+Editing functions
+===========================================
+*/
+
+/*
+================
+Field_Undo
+
+Restore the fields state to the last saved state
+================
+*/
+void Field_Undo( field_t *edit )
+{
+	int end;
+
+	// if the field doesn't have undo buffer
+	if ( !edit->undobuf )
+		return;
+
+	if ( edit->undobuf->size == 0 )
+		return; // nothing to restore
+
+	edit->undobuf->size--;
+	end = UNDOBUF_END( *edit->undobuf );
+
+	strcpy( edit->buffer, edit->undobuf->buffers[end] );
+	Field_MoveTo( edit, edit->undobuf->cursors[end] );
+
+	edit->undobuf->lastcmd = UNDO_NONE;
+}
+
+void Field_Yank( field_t *edit )
+{
+}
+
+void Field_RuboutChar( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_RUBOUT_CHAR );
+		Field_DeleteTo( edit, edit->cursor - 1 );
+}
+
+void Field_RuboutWord( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_RUBOUT_WORD );
+		Field_DeleteTo( edit, Field_BackWord( edit ) );
+}
+
+void Field_RuboutLongWord( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_RUBOUT_LONG_WORD );
+		Field_DeleteTo( edit, Field_BackLongWord( edit ) );
+}
+
+void Field_RuboutLine( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_RUBOUT_LINE );
+		Field_DeleteTo( edit, 0 );
+}
+
+void Field_DeleteChar( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_DELETE_CHAR );
+		Field_DeleteTo( edit, edit->cursor + 1 );
+}
+
+void Field_DeleteWord( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_DELETE_WORD );
+		Field_DeleteTo( edit, Field_ForwardWord( edit ) );
+}
+
+void Field_DeleteLine( field_t *edit )
+{
+		size_t len = strlen( edit->buffer );
+
+		if ( edit->cursor == len )
+				return;
+
+		Field_PushUndo( edit, UNDO_DELETE_LINE );
+		Field_DeleteTo( edit, len );
+}
+
+
+void Field_TransposeChars( field_t *edit )
+{
+		size_t len = strlen( edit->buffer );
+		if ( edit->cursor == 0 || len < 2 ) {
+			return;
+		}
+		if ( edit->cursor == len ) {
+			edit->cursor--;
+		}
+
+		Field_PushUndo( edit, UNDO_TRANSPOSE_CHARS );
+		char tmp = edit->buffer[edit->cursor];
+		edit->buffer[edit->cursor] = edit->buffer[edit->cursor - 1];
+		edit->buffer[edit->cursor - 1] = tmp;
+		edit->cursor++;
+}
+
+
+void Field_MakeWordUpper( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_TOUPPER_WORD );
+		Field_MakeUpperTo( edit, Field_ForwardWord( edit ) );
+}
+
+void Field_MakeWordLower( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_TOLOWER_WORD );
+		Field_MakeLowerTo( edit, Field_ForwardWord( edit ) );
+}
+
+void Field_MakeWordCapitalized( field_t *edit )
+{
+		Field_PushUndo( edit, UNDO_CAPITALIZE_WORD );
+		Field_MakeUpperTo( edit, Field_BackWord( edit ) );
+		edit->cursor++;
+		Field_MakeLowerTo( edit, Field_ForwardWord( edit ) );
 }

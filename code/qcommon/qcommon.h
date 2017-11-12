@@ -777,7 +777,6 @@ typedef struct {
 	yankbuf_t	*yankbuf;
 } field_t;
 
-
 void Field_Clear( field_t *edit );
 void Field_AutoComplete( field_t *edit );
 void Field_CompleteKeyname( void );
@@ -788,11 +787,28 @@ void Field_CompleteCommand( char *cmd,
 void Field_CompletePlayerName( const char **names, int count );
 
 void Field_MoveForwardChar( field_t *edit );
-void Field_MoveBackChar( field_t *edit );
 void Field_MoveForwardWord( field_t *edit );
+void Field_MoveBackChar( field_t *edit );
 void Field_MoveBackWord( field_t *edit );
 void Field_MoveLineStart( field_t *edit );
 void Field_MoveLineEnd( field_t *edit );
+
+void Field_Undo( field_t *edit );
+void Field_Yank( field_t *edit );
+
+void Field_RuboutChar( field_t *edit );
+void Field_RuboutWord( field_t *edit );
+void Field_RuboutLongWord( field_t *edit );
+void Field_RuboutLine( field_t *edit );
+void Field_DeleteChar( field_t *edit );
+void Field_DeleteWord( field_t *edit );
+void Field_DeleteLine( field_t *edit );
+
+void Field_TransposeChars( field_t *edit );
+
+void Field_MakeWordUpper( field_t *edit );
+void Field_MakeWordLower( field_t *edit );
+void Field_MakeWordCapitalized( field_t *edit );
 
 /*
 ==============================================================
