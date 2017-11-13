@@ -533,6 +533,12 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	// ^Y yanks
+	if ( ch == CTRL( 'Y' ) ) {
+		Field_Yank( edit );
+		return;
+	}
+
 	if ( ch == CTRL( 'C' ) ) {	// ^C clears the field
 		Field_Clear( edit );
 		return;
