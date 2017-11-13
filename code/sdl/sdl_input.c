@@ -317,6 +317,34 @@ static keyNum_t IN_TranslateSDLToQ3Key( SDL_Keysym *keysym, qboolean down )
 }
 
 /*
+================
+IN_TranslateKeyToCtrlChar
+
+Translate key to ASCII Control character, return -1 if no conversation could be
+made
+================
+*/
+static int IN_TranslateKeyToCtrlChar( int key ) {
+	switch( key ) {
+	case '-':
+		// fallthrough
+	case '/':
+		// fallthrough
+	case '7':
+		return CTRL( '_' );
+	case '8':
+		// fallthrough
+	case K_BACKSPACE:
+		return CTRL( 'h' );
+	}
+
+	if ( (key >= '@' && key < '_') || (key >= 'a' && key <= 'z') )
+		return CTRL( key );
+
+	return -1;
+}
+
+/*
 ===============
 IN_GobbleMotionEvents
 ===============
@@ -325,6 +353,7 @@ static void IN_GobbleMotionEvents( void )
 {
 	SDL_Event dummy[ 1 ];
 	int val = 0;
+
 
 	// Gobble any mouse motion events
 	SDL_PumpEvents( );
@@ -997,10 +1026,11 @@ static void IN_ProcessEvents( void )
 				if( ( key = IN_TranslateSDLToQ3Key( &e.key.keysym, qtrue ) ) )
 					Com_QueueEvent( in_eventTime, SE_KEY, key, qtrue, 0, NULL );
 
-				if( key == K_BACKSPACE )
-					Com_QueueEvent( in_eventTime, SE_CHAR, CTRL('h'), 0, 0, NULL );
-				else if( keys[K_CTRL].down && key >= 'a' && key <= 'z' )
-					Com_QueueEvent( in_eventTime, SE_CHAR, CTRL(key), 0, 0, NULL );
+				if( key == K_BACKSPACE || keys[K_CTRL].down ) {
+					int k = IN_TranslateKeyToCtrlChar( key );
+					if ( k != -1 )
+						Com_QueueEvent( in_eventTime, SE_CHAR, k, 0, 0, NULL );
+				}
 
 				lastKeyDown = key;
 				break;
@@ -1013,7 +1043,7 @@ static void IN_ProcessEvents( void )
 				break;
 
 			case SDL_TEXTINPUT:
-				if( lastKeyDown != K_CONSOLE )
+				if( lastKeyDown != K_CONSOLE && !keys[K_CTRL].down )
 				{
 					char *c = e.text.text;
 

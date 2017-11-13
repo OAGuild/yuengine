@@ -522,23 +522,6 @@ Field_CharEvent
 ==================
 */
 void Field_CharEvent( field_t *edit, int ch ) {
-	// The SDL2 version of sdl_input.c doesn't generate CTRL codes for
-	// non-alpha characters. So we generate ASCII CTRL codes here for key
-	// combinations to use in shortcuts.
-	if ( keys[K_CTRL].down ) {
-		switch ( ch ) {
-		case '_':
-		case '-':
-		case '/':
-		case '7':
-			ch = CTRL('_');
-			break;
-		case '8':
-			ch = CTRL('H');
-			break;
-		}
-	}
-
 	if ( ch == CTRL( 'V' ) ) {	// ^V pastes
 		Field_Paste( edit );
 		return;
