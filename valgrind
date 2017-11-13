@@ -1,6 +1,0 @@
-==13991== Memcheck, a memory error detector
-==13991== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
-==13991== Using Valgrind-3.10.0 and LibVEX; rerun with -h for copyright info
-==13991== Command: /usr/local/games/yuoa
-==13991== Parent PID: 12304
-==13991== 
