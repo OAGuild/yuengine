@@ -2,8 +2,7 @@ Yu Engine for OpenArena
 =======================
 
 Engine forked from ioquake3 for use with OpenArena. By default it will connect
-use the OpenArena master server and use OpenArenas protocol number, removing the
-need for a wrapper script like as is required with ioquake3.
+use the OpenArena master server and use OpenArenas protocol number, removing the need for a wrapper script like as is required with ioquake3.
 
 See ioq3-readme.txt for the README of ioquake3, and id-readme for README for of
 the original Quake 3 source code release.
@@ -26,6 +25,8 @@ The value of `cg_fov` specify the FOV used when playing with an aspect ratio of
 vertical FOV as it would have on 4:3, but expand the horizontal FOV to fit the
 screen. Previously Vert- FOV was used. See [this wikipedia article][fov] for
 more information about Hor+ and Vert- FOV.
+
+[fov]: https://en.wikipedia.org/wiki/Field_of_view_in_video_games
 
 Cvar `cl_scaleSensWithFov`
 --------------------------
