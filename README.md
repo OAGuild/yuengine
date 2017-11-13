@@ -67,7 +67,7 @@ General GUI-style keyboard shortcuts:
 - `CTRL-Delete`, delete word after cursor (new)
 - `Backspace/CTRL-H`, delete character before cursor
 - `CTRL-Backspace`, delete word before cursor (new)
-- `CTRL-Z`, undo last change
+- `CTRL-Z`, undo last change (new)
 
 UNIX commandline-style keyboard shortcuts (`^` is caret notation for control
 character):
@@ -88,7 +88,7 @@ character):
 - `ALT-F`, move cursor right one word (new)
 - `ALT-F`, move cursor right one word (new)
 - `^T`, transpose characters (new)
-- `^_`, undo last change
+- `^_`, undo last change (new)
 
 ### Complete list of console specific shortcuts
 
