@@ -5,8 +5,9 @@ Engine forked from ioquake3 for use with OpenArena. By default it will connect
 use the OpenArena master server and use OpenArenas protocol number, removing the
 need for a wrapper script like as is required with ioquake3.
 
-See ioq3-readme.txt for the README of ioquake3, and id-readme for README for of
-the original Quake 3 source code release.
+See [ioq3-readme.txt](./ioq3-readme.txt) for the README of ioquake3, or
+[id-readme.txt](./id-readme.txt) for README for of the original Quake 3 source
+code release.
 
 Feature list
 ------------
