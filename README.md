@@ -35,11 +35,11 @@ This cvar was added because the zoom sensitivity formula used in Quake3 and
 OpenArena cgame calculates the zoom sensitivity with an incorrect formula. This
 can cause aim to be a bit inconsistent if you aren't used to it already.
 
-When this cvar is set to non-zero. The game will automatically adjust mouse
-sensitivity according to the current FOV to preserve the same feel. The not only
-affects the sensitivity when zooming (also when changing `cg_fov`). The exact
-value of the `sensitivity` cvar is used at 90 degree FOV. Then it increases or
-decreases as the FOV changes.
+When this cvar is set to non-zero. The engine will automatically adjust mouse
+sensitivity according to the current FOV to preserve the same feel. This not
+only affects the sensitivity when zooming (also when changing `cg_fov`). The
+exact value of the `sensitivity` cvar is used at 90 degree FOV. Then it
+increases or decreases as the FOV changes.
 
 Default value for `cl_scaleSensWithFov` is `0`.
 
