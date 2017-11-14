@@ -2,7 +2,8 @@ Yu Engine for OpenArena
 =======================
 
 Engine forked from ioquake3 for use with OpenArena. By default it will connect
-use the OpenArena master server and use OpenArenas protocol number, removing the need for a wrapper script like as is required with ioquake3.
+use the OpenArena master server and use OpenArenas protocol number, removing the
+need for a wrapper script like as is required with ioquake3.
 
 See ioq3-readme.txt for the README of ioquake3, and id-readme for README for of
 the original Quake 3 source code release.
@@ -37,7 +38,7 @@ can cause aim to be a bit inconsistent if you aren't used to it already.
 
 When this cvar is set to non-zero. The engine will automatically adjust mouse
 sensitivity according to the current FOV to preserve the same feel. This not
-only affects the sensitivity when zooming (also when changing `cg_fov`). The
+only affects the sensitivity when zooming but also when changing `cg_fov`. The
 exact value of the `sensitivity` cvar is used at 90 degree FOV. Then it
 increases or decreases as the FOV changes.
 
