@@ -33,9 +33,9 @@ more information about Hor+ and Vert- FOV.
 Cvar `cl_scaleSensWithFov`
 --------------------------
 
-This cvar was added because the zoom sensitivity formula used in Quake3 and
-OpenArena cgame calculates the zoom sensitivity with an incorrect formula. This
-can cause aim to be a bit inconsistent if you aren't used to it already.
+This cvar was added because the gamecode used in Quake3 and OpenArena calculates
+the zoom sensitivity with an incorrect formula. This can cause aim to be a bit
+inconsistent if you aren't used to it already.
 
 When this cvar is set to non-zero. The engine will automatically adjust mouse
 sensitivity according to the current FOV to preserve the same feel. This not
