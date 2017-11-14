@@ -23,8 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "q_shared.h"
 #include "qcommon.h"
 
-// get the last index of undobuf_t
-#define UNDOBUF_END(u) (((u).start + (u).size) % MAX_UNDO_LEVELS)
+// get the top index of undobuf_t
+#define UNDOBUF_TOP(u) (((u).start + (u).size) % MAX_UNDO_LEVELS)
+
+// get the top index of yankbuf_t
+#define YANKBUF_TOP(u) (((u).start + (u).size) % MAX_YANK_LEVELS)
 
 // identify different commands and how they should how up in undo history
 typedef enum {
@@ -48,7 +51,8 @@ typedef enum {
 	UNDO_TOUPPER_WORD,
 	UNDO_TOLOWER_WORD,
 	UNDO_CAPITALIZE_WORD,
-	UNDO_PASTE,
+	UNDO_YANK,
+	UNDO_CLIPBOARD_PASTE,
 	UNDO_TRANSPOSE_CHARS,
 
 	// commands that if repeated will be concatenated to one entry in undo
@@ -66,12 +70,12 @@ typedef enum {
 
 /*
 =================
-Field_MoveTo
+MoveTo
 
 Moves the cursor to position
 =================
 */
-static void Field_MoveTo( field_t *edit, int to )
+static void MoveTo( field_t *edit, int to )
 {
 	int len = strlen( edit->buffer );
 
@@ -92,12 +96,12 @@ static void Field_MoveTo( field_t *edit, int to )
 
 /*
 ==================
-Field_DeleteTo
+DeleteTo
 
 Deletes text from the cursor to position
 ==================
 */
-static void Field_DeleteTo( field_t *edit, int to )
+static void DeleteTo( field_t *edit, int to )
 {
 	int cur = edit->cursor;
 	size_t len = strlen( edit->buffer );
@@ -110,7 +114,7 @@ static void Field_DeleteTo( field_t *edit, int to )
 	if ( to < cur ) {
 		// delete backwards and adjust cursor and scroll
 		memmove( edit->buffer + to, edit->buffer + cur, len - cur + 1);
-		Field_MoveTo( edit, to );
+		MoveTo( edit, to );
 	} else {
 		// delete forward
 		memmove( edit->buffer + cur, edit->buffer + to, len - to + 1);
@@ -119,13 +123,103 @@ static void Field_DeleteTo( field_t *edit, int to )
 
 /*
 ================
-Field_PushUndo
+KillTo
+
+Deletes text from the cursor to position and put it into the killring (known
+here as yank buffer)
+================
+*/
+static void KillTo( field_t *edit, int to )
+{
+	int cur = edit->cursor;
+	size_t len = strlen( edit->buffer );
+
+	if ( to < 0 )
+		to = 0;
+	else if ( to > len )
+		to = len;
+
+	if ( edit->yankbuf ) {
+		if ( edit->yankbuf->size < MAX_YANK_LEVELS )
+			edit->yankbuf->size++;
+		else
+			edit->yankbuf->start = (edit->yankbuf->start + 1) % MAX_YANK_LEVELS;
+
+		int n = YANKBUF_TOP( *edit->yankbuf );
+
+		if ( to < cur ) {
+			memcpy( edit->yankbuf->buffers[n], edit->buffer + to, cur - to );
+			edit->yankbuf->buffers[n][cur - to] = '\0';
+		} else {
+			memcpy( edit->yankbuf->buffers[n], edit->buffer + cur, to - cur );
+			edit->yankbuf->buffers[n][to - cur] = '\0';
+		}
+	}
+
+	DeleteTo( edit, to );
+}
+
+/*
+================
+InsertChar
+
+Put character at cursor position
+================
+*/
+static void InsertChar( field_t *edit, char ch )
+{
+	size_t len = strlen( edit->buffer );
+
+	// - 2 to leave room for the leading slash and trailing \0
+	if ( len == MAX_EDIT_LINE - 2 ) {
+		return; // all full
+	}
+
+	memmove( edit->buffer + edit->cursor + 1,
+		edit->buffer + edit->cursor, len + 1 - edit->cursor );
+	edit->buffer[edit->cursor] = ch;
+
+	MoveTo( edit, edit->cursor + 1 );
+}
+
+/*
+================
+ReplaceChar
+
+Replace char at cursor position
+================
+*/
+static void ReplaceChar( field_t *edit, char ch )
+{
+	// - 2 to leave room for the leading slash and trailing \0
+	if ( edit->cursor == MAX_EDIT_LINE - 2 )
+		return;
+	edit->buffer[edit->cursor] = ch;
+	MoveTo( edit, edit->cursor + 1 );
+}
+
+/*
+================
+InsertString
+
+Insert content of string at cursor position
+================
+*/
+static void InsertString( field_t *edit, const char *text )
+{
+	while ( *text++ )
+		InsertChar( edit, *text );
+}
+
+/*
+================
+PushUndo
 
 Save the field state before command so it can be undone later. How the field
 state is saved depends on the command entered.
 ================
 */
-static void Field_PushUndo( field_t *edit, undo_cmd_t cmd )
+static void PushUndo( field_t *edit, undo_cmd_t cmd )
 {
 	int end;
 
@@ -143,7 +237,7 @@ static void Field_PushUndo( field_t *edit, undo_cmd_t cmd )
 			goto ret; // duplication
 	}
 
-	end = UNDOBUF_END( *edit->undobuf );
+	end = UNDOBUF_TOP( *edit->undobuf );
 
 	edit->undobuf->cursors[end] = edit->cursor;
 	strcpy( edit->undobuf->buffers[end], edit->buffer );
@@ -159,12 +253,12 @@ ret:
 
 /*
 ================
-Field_MakeUpperTo
+MakeUpperTo
 
 Makes text uppercase from the cursor to position
 ================
 */
-static void Field_MakeUpperTo( field_t *edit, int to )
+static void MakeUpperTo( field_t *edit, int to )
 {
 	int cur = edit->cursor;
 	int len = strlen( edit->buffer );
@@ -178,17 +272,17 @@ static void Field_MakeUpperTo( field_t *edit, int to )
 	for ( i = cur; i != to; to < cur ? i-- : i++ ) {
 		edit->buffer[i] = toupper( edit->buffer[i] );
 	}
-	Field_MoveTo( edit, to );
+	MoveTo( edit, to );
 }
 
 /*
 ================
-Field_MakeLowerTo
+MakeLowerTo
 
 Makes text lowercase from the cursor to position
 ================
 */
-static void Field_MakeLowerTo( field_t *edit, size_t to )
+static void MakeLowerTo( field_t *edit, size_t to )
 {
 	int cur = edit->cursor;
 	int len = strlen(edit->buffer);
@@ -202,7 +296,7 @@ static void Field_MakeLowerTo( field_t *edit, size_t to )
 	for ( i = cur; i != to; to < cur ? i-- : i++ ) {
 		edit->buffer[i] = tolower( edit->buffer[i] );
 	}
-	Field_MoveTo( edit, to );
+	MoveTo( edit, to );
 }
 
 
@@ -291,10 +385,10 @@ static void PrintCvarMatches( const char *s ) {
 
 /*
 ===============
-Field_FindFirstSeparator
+FindFirstSeparator
 ===============
 */
-static char *Field_FindFirstSeparator( char *s )
+static char *FindFirstSeparator( char *s )
 {
 	int i;
 
@@ -431,7 +525,7 @@ void Field_CompleteCommand( char *cmd,
 			baseCmd++;
 #endif
 
-		if( ( p = Field_FindFirstSeparator( cmd ) ) )
+		if( ( p = FindFirstSeparator( cmd ) ) )
 			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
 		else
 			Cmd_CompleteArgument( baseCmd, cmd, completionArgument );
@@ -474,7 +568,7 @@ Perform Tab expansion
 */
 void Field_AutoComplete( field_t *field )
 {
-	Field_PushUndo( field, UNDO_AUTOCOMPLETE );
+	PushUndo( field, UNDO_AUTOCOMPLETE );
 	completionField = field;
 	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
 }
@@ -484,7 +578,7 @@ void Field_AutoComplete( field_t *field )
 Field_CompletePlayerName
 ===============
 */
-static qboolean Field_CompletePlayerNameFinal( qboolean whitespace )
+static qboolean CompletePlayerNameFinal( qboolean whitespace )
 {
 	int completionOffset;
 
@@ -565,7 +659,7 @@ void Field_CompletePlayerName( const char **names, int nameCount )
 	}
 
 	whitespace = nameCount == 1? qtrue: qfalse;
-	if( !Field_CompletePlayerNameFinal( whitespace ) )
+	if( !CompletePlayerNameFinal( whitespace ) )
 	{
 
 	}
@@ -578,7 +672,7 @@ Returns the position back to start of word
 Words are delimited by space, numbers, and punctuation
 ===================
 */
-static int Field_BackWord( field_t *edit )
+static int BackWord( field_t *edit )
 {
 	int i = edit->cursor;
 
@@ -593,14 +687,14 @@ static int Field_BackWord( field_t *edit )
 
 /*
 ===================
-Field_ForwardWord
+ForwardWord
 
 Returns the position forward to end of word
 
 Words are delimited by space, numbers, and punctuation
 ===================
 */
-static int Field_ForwardWord( field_t *edit )
+static int ForwardWord( field_t *edit )
 {
 	int i = edit->cursor;
 
@@ -615,14 +709,14 @@ static int Field_ForwardWord( field_t *edit )
 
 /*
 ==================
-Field_BackLongWord
+BackLongWord
 
 Returns the position back to start of "long word"
 
 Long words are only delimited by space
 ==================
 */
-static int Field_BackLongWord( field_t *edit )
+static int BackLongWord( field_t *edit )
 {
 	int i = edit->cursor;
 
@@ -643,38 +737,38 @@ Movement functions
 
 void Field_MoveForwardChar( field_t *edit )
 {
-	Field_PushUndo( edit, UNDO_MOVE_FORWARD_CHAR );
-	Field_MoveTo( edit, edit->cursor + 1 );
+	PushUndo( edit, UNDO_MOVE_FORWARD_CHAR );
+	MoveTo( edit, edit->cursor + 1 );
 }
 
 void Field_MoveBackChar( field_t *edit )
 {
-	Field_PushUndo( edit, UNDO_MOVE_BACK_CHAR );
-	Field_MoveTo( edit, edit->cursor - 1 );
+	PushUndo( edit, UNDO_MOVE_BACK_CHAR );
+	MoveTo( edit, edit->cursor - 1 );
 }
 
 void Field_MoveForwardWord( field_t *edit )
 {
-	Field_PushUndo( edit, UNDO_MOVE_FORWARD_WORD );
-	Field_MoveTo( edit, Field_ForwardWord( edit ) );
+	PushUndo( edit, UNDO_MOVE_FORWARD_WORD );
+	MoveTo( edit, ForwardWord( edit ) );
 }
 
 void Field_MoveBackWord( field_t *edit )
 {
-	Field_PushUndo( edit, UNDO_MOVE_BACK_WORD );
-	Field_MoveTo( edit, Field_BackWord( edit ) );
+	PushUndo( edit, UNDO_MOVE_BACK_WORD );
+	MoveTo( edit, BackWord( edit ) );
 }
 
 void Field_MoveLineStart( field_t *edit )
 {
-	Field_PushUndo( edit, UNDO_MOVE_LINE_START );
-	Field_MoveTo( edit, 0 );
+	PushUndo( edit, UNDO_MOVE_LINE_START );
+	MoveTo( edit, 0 );
 }
 
 void Field_MoveLineEnd( field_t *edit )
 {
-	Field_PushUndo( edit, UNDO_MOVE_LINE_END );
-	Field_MoveTo( edit, strlen( edit->buffer ) );
+	PushUndo( edit, UNDO_MOVE_LINE_END );
+	MoveTo( edit, strlen( edit->buffer ) );
 }
 
 /*
@@ -702,129 +796,157 @@ void Field_Undo( field_t *edit )
 		return; // nothing to restore
 
 	edit->undobuf->size--;
-	end = UNDOBUF_END( *edit->undobuf );
+	end = UNDOBUF_TOP( *edit->undobuf );
 
 	strcpy( edit->buffer, edit->undobuf->buffers[end] );
-	Field_MoveTo( edit, edit->undobuf->cursors[end] );
+	MoveTo( edit, edit->undobuf->cursors[end] );
 
 	edit->undobuf->lastcmd = UNDO_NONE;
 }
 
 void Field_Yank( field_t *edit )
 {
+	int end;
+
+	if ( !edit->yankbuf )
+		return;
+
+	if ( edit->yankbuf->size == 0 )
+		return;
+
+	end = YANKBUF_TOP( *edit->yankbuf );
+
+	PushUndo( edit, UNDO_YANK );
+	InsertString( edit, edit->yankbuf->buffers[end] );
+}
+
+void Field_YankRotate( field_t *edit )
+{
+	if ( !edit->undobuf || edit->undobuf->lastcmd != UNDO_YANK ||
+			!edit->yankbuf || edit->yankbuf->size <= 0 )
+		return;
+
+	edit->yankbuf->start = (edit->yankbuf->start - 1) % edit->yankbuf->size;
+	Field_Undo( edit );
+	Field_Yank( edit );
+}
+
+void Field_ClipboardPaste( field_t *edit ) {
+	char	*cbd;
+	int		pasteLen, i;
+
+	cbd = Sys_GetClipboardData();
+
+	if ( !cbd || *cbd == '\0' ) {
+		return;
+	}
+
+	PushUndo( edit, UNDO_CLIPBOARD_PASTE );
+
+	// send as if typed, so insert / overstrike works properly
+	pasteLen = strlen( cbd );
+	for ( i = 0 ; i < pasteLen ; i++ ) {
+		InsertChar( edit, cbd[i] );
+	}
+
+	Z_Free( cbd );
 }
 
 void Field_RuboutChar( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_RUBOUT_CHAR );
-		Field_DeleteTo( edit, edit->cursor - 1 );
+	PushUndo( edit, UNDO_RUBOUT_CHAR );
+	DeleteTo( edit, edit->cursor - 1 );
 }
 
 void Field_RuboutWord( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_RUBOUT_WORD );
-		Field_DeleteTo( edit, Field_BackWord( edit ) );
+	PushUndo( edit, UNDO_RUBOUT_WORD );
+	KillTo( edit, BackWord( edit ) );
 }
 
 void Field_RuboutLongWord( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_RUBOUT_LONG_WORD );
-		Field_DeleteTo( edit, Field_BackLongWord( edit ) );
+	PushUndo( edit, UNDO_RUBOUT_LONG_WORD );
+	KillTo( edit, BackLongWord( edit ) );
 }
 
 void Field_RuboutLine( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_RUBOUT_LINE );
-		Field_DeleteTo( edit, 0 );
+	PushUndo( edit, UNDO_RUBOUT_LINE );
+	KillTo( edit, 0 );
 }
 
 void Field_DeleteChar( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_DELETE_CHAR );
-		Field_DeleteTo( edit, edit->cursor + 1 );
+	PushUndo( edit, UNDO_DELETE_CHAR );
+	DeleteTo( edit, edit->cursor + 1 );
 }
 
 void Field_DeleteWord( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_DELETE_WORD );
-		Field_DeleteTo( edit, Field_ForwardWord( edit ) );
+	PushUndo( edit, UNDO_DELETE_WORD );
+	KillTo( edit, ForwardWord( edit ) );
 }
 
 void Field_DeleteLine( field_t *edit )
 {
-		size_t len = strlen( edit->buffer );
+	size_t len = strlen( edit->buffer );
 
-		if ( edit->cursor == len )
-				return;
+	if ( edit->cursor == len )
+			return;
 
-		Field_PushUndo( edit, UNDO_DELETE_LINE );
-		Field_DeleteTo( edit, len );
+	PushUndo( edit, UNDO_DELETE_LINE );
+	KillTo( edit, len );
 }
 
 
 void Field_TransposeChars( field_t *edit )
 {
-		size_t len = strlen( edit->buffer );
-		if ( edit->cursor == 0 || len < 2 ) {
-			return;
-		}
-		if ( edit->cursor == len ) {
-			edit->cursor--;
-		}
+	size_t len = strlen( edit->buffer );
+	if ( edit->cursor == 0 || len < 2 ) {
+		return;
+	}
+	if ( edit->cursor == len ) {
+		edit->cursor--;
+	}
 
-		Field_PushUndo( edit, UNDO_TRANSPOSE_CHARS );
-		char tmp = edit->buffer[edit->cursor];
-		edit->buffer[edit->cursor] = edit->buffer[edit->cursor - 1];
-		edit->buffer[edit->cursor - 1] = tmp;
-		edit->cursor++;
+	PushUndo( edit, UNDO_TRANSPOSE_CHARS );
+	char tmp = edit->buffer[edit->cursor];
+	edit->buffer[edit->cursor] = edit->buffer[edit->cursor - 1];
+	edit->buffer[edit->cursor - 1] = tmp;
+	edit->cursor++;
 }
 
 
 void Field_MakeWordUpper( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_TOUPPER_WORD );
-		Field_MakeUpperTo( edit, Field_ForwardWord( edit ) );
+	PushUndo( edit, UNDO_TOUPPER_WORD );
+	MakeUpperTo( edit, ForwardWord( edit ) );
 }
 
 void Field_MakeWordLower( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_TOLOWER_WORD );
-		Field_MakeLowerTo( edit, Field_ForwardWord( edit ) );
+	PushUndo( edit, UNDO_TOLOWER_WORD );
+	MakeLowerTo( edit, ForwardWord( edit ) );
 }
 
 void Field_MakeWordCapitalized( field_t *edit )
 {
-		Field_PushUndo( edit, UNDO_CAPITALIZE_WORD );
-		Field_MakeUpperTo( edit, Field_BackWord( edit ) );
-		edit->cursor++;
-		Field_MakeLowerTo( edit, Field_ForwardWord( edit ) );
+	PushUndo( edit, UNDO_CAPITALIZE_WORD );
+	MakeUpperTo( edit, BackWord( edit ) );
+	edit->cursor++;
+	MakeLowerTo( edit, ForwardWord( edit ) );
 }
 
 void Field_InsertChar( field_t *edit, char ch )
 {
 
-	Field_PushUndo( edit, UNDO_INSERT_CHAR );
-
-	size_t len = strlen( edit->buffer );
-
-	// - 2 to leave room for the leading slash and trailing \0
-	if ( len == MAX_EDIT_LINE - 2 ) {
-		return; // all full
-	}
-	memmove( edit->buffer + edit->cursor + 1,
-		edit->buffer + edit->cursor, len + 1 - edit->cursor );
-	edit->buffer[edit->cursor] = ch;
-
-	Field_MoveTo( edit, edit->cursor + 1 );
+	PushUndo( edit, UNDO_INSERT_CHAR );
+	InsertChar( edit, ch );
 }
 
 void Field_ReplaceChar( field_t *edit, char ch )
 {
-	Field_PushUndo( edit, UNDO_REPLACE_CHAR );
-
-	// - 2 to leave room for the leading slash and trailing \0
-	if ( edit->cursor == MAX_EDIT_LINE - 2 )
-		return;
-	edit->buffer[edit->cursor] = ch;
-	Field_MoveTo( edit, edit->cursor + 1 );
+	PushUndo( edit, UNDO_REPLACE_CHAR );
+	ReplaceChar( edit, ch );
 }

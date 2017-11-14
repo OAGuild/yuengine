@@ -794,7 +794,9 @@ void Field_MoveLineStart( field_t *edit );
 void Field_MoveLineEnd( field_t *edit );
 
 void Field_Undo( field_t *edit );
+void Field_ClipboardPaste( field_t *edit );
 void Field_Yank( field_t *edit );
+void Field_YankRotate( field_t *edit );
 
 void Field_RuboutChar( field_t *edit );
 void Field_RuboutWord( field_t *edit );

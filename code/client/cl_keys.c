@@ -33,11 +33,13 @@ int			nextHistoryLine;		// the last line in the history buffer, not masked
 int			historyLine;	// the line being displayed from history buffer
 							// will be <= nextHistoryLine
 
+yankbuf_t	yankbuf;
+
 undobuf_t	g_consoleUndobuf;
-field_t		g_consoleField = { .undobuf = &g_consoleUndobuf };
+field_t		g_consoleField = { .undobuf = &g_consoleUndobuf, .yankbuf = &yankbuf };
 
 undobuf_t	chatUndobuf;
-field_t		chatField = { .undobuf = &chatUndobuf };
+field_t		chatField = { .undobuf = &chatUndobuf, .yankbuf = &yankbuf };
 qboolean	chat_team;
 
 int			chat_playerNum;
@@ -423,30 +425,6 @@ void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor,
 }
 
 /*
-================
-Field_Paste
-================
-*/
-void Field_Paste( field_t *edit ) {
-	char	*cbd;
-	int		pasteLen, i;
-
-	cbd = Sys_GetClipboardData();
-
-	if ( !cbd ) {
-		return;
-	}
-
-	// send as if typed, so insert / overstrike works properly
-	pasteLen = strlen( cbd );
-	for ( i = 0 ; i < pasteLen ; i++ ) {
-		Field_CharEvent( edit, cbd[i] );
-	}
-
-	Z_Free( cbd );
-}
-
-/*
 =================
 Field_KeyDownEvent
 
@@ -461,7 +439,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 
 	// shift-insert is paste
 	if ( ( ( key == K_INS ) || ( key == K_KP_INS ) ) && keys[K_SHIFT].down ) {
-		Field_Paste( edit );
+		Field_ClipboardPaste( edit );
 		return;
 	}
 
@@ -523,7 +501,7 @@ Field_CharEvent
 */
 void Field_CharEvent( field_t *edit, int ch ) {
 	if ( ch == CTRL( 'V' ) ) {	// ^V pastes
-		Field_Paste( edit );
+		Field_ClipboardPaste( edit );
 		return;
 	}
 
@@ -539,24 +517,29 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	if ( ch == 'y' && keys[K_ALT].down ) {
+		Field_YankRotate( edit );
+		return;
+	}
+
 	if ( ch == CTRL( 'C' ) ) {	// ^C clears the field
 		Field_Clear( edit );
 		return;
 	}
 
-	if ( toupper(ch) == 'U' && keys[K_ALT].down ) {
+	if ( ch == 'u' && keys[K_ALT].down ) {
 		// alt-u makes word uppercase
 		Field_MakeWordUpper( edit );
 		return;
 	}
 
-	if ( toupper(ch) == 'L' && keys[K_ALT].down ) {
+	if ( ch == 'l' && keys[K_ALT].down ) {
 		// alt-l makes word lowercase
 		Field_MakeWordLower( edit );
 		return;
 	}
 
-	if ( toupper(ch) == 'C' && keys[K_ALT].down ) {
+	if ( ch == 'c' && keys[K_ALT].down ) {
 		// alt-c makes word capitalized
 		Field_MakeWordCapitalized( edit );
 		return;
@@ -572,8 +555,20 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	if ( ch == 'f' && keys[K_ALT].down ) {
+		// alt-f moves to next word
+		Field_MoveForwardWord( edit );
+		return;
+	}
+
 	if ( ch == CTRL( 'B' ) ) {	// ^B moves to previous char
 		Field_MoveBackChar( edit );
+		return;
+	}
+
+	if ( ch == 'b' && keys[K_ALT].down ) {
+		// alt-b moves to previous word
+		Field_MoveBackWord( edit );
 		return;
 	}
 
@@ -582,7 +577,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( toupper(ch) == 'D' && keys[K_ALT].down) {
+	if ( ch == 'd' && keys[K_ALT].down) {
 		// alt-d deletes to end of word
 		Field_DeleteWord( edit );
 		return;
