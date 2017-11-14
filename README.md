@@ -99,8 +99,8 @@ character):
 
 Console specific GUI-style keyboard shortcuts:
 
-- `CTRL-Up`, go to back in command in history
-- `CTRL-Down`, go to forward in command in history
+- `Up`, go to back in command in history
+- `Down`, go to forward in command in history
 - `CTRL-PgUp`, scroll up one line
 - `CTRL-PgDn`, scroll down one line
 - `CTRL-Home`, scroll to first line
