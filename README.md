@@ -45,8 +45,8 @@ increases or decreases as the FOV changes.
 
 Default value for `cl_scaleSensWithFov` is `0`.
 
-Editing fields
---------------
+Editing text fields
+-------------------
 
 Additional keyboard commands have been added for editing text fields. These
 commands are available when typing commands in the in-game console and when
@@ -82,7 +82,7 @@ character):
 - `^D`, delete character after cursor (new)
 - `^C`, clear field, this operation cannot be undone
 - `ALT-D`, delete word after cursor (new)
-- `Backspace/CTRL-H`, delete character before cursor
+- `Backspace/^H`, delete character before cursor
 - `ALT-Backspace`/`ALT-^H`, delete word before cursor (new)
 - `^W`, delete previous "large word" (new)
 - `^B`, move cursor left one character (new)
@@ -92,8 +92,8 @@ character):
 - `ALT-F`, move cursor right one word (new)
 - `^T`, transpose characters (new)
 - `^_`, undo last change (new)
-- `^Y`, yank from kill ring
-- `ALT-Y`, rotate kill ring
+- `^Y`, yank from kill ring (new)
+- `ALT-Y`, rotate kill ring (new)
 
 ### Complete list of console specific shortcuts
 
