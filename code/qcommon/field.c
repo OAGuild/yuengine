@@ -155,7 +155,6 @@ static void KillTo( field_t *edit, int to )
 			edit->yankbuf->buffers[n][to - cur] = '\0';
 		}
 	}
-
 	DeleteTo( edit, to );
 }
 
@@ -207,8 +206,8 @@ Insert content of string at cursor position
 */
 static void InsertString( field_t *edit, const char *text )
 {
-	while ( *text++ )
-		InsertChar( edit, *text );
+	while ( *text )
+		InsertChar( edit, *text++ );
 }
 
 /*
