@@ -5,9 +5,11 @@ Engine forked from ioquake3 for use with OpenArena. By default it will connect
 use the OpenArena master server and use OpenArenas protocol number, removing the
 need for a wrapper script like as is required with ioquake3.
 
-See [ioq3-readme.txt](./ioq3-readme.txt) for the README of ioquake3, or
-[id-readme.txt](./id-readme.txt) for README for of the original Quake 3 source
-code release.
+Build instructions
+------------------
+
+See [the README of ioquake3](./ioq3-readme.md) for instructions on how to
+compile and install this software.
 
 Feature list
 ------------
@@ -18,6 +20,9 @@ New features implemented in Yu Engine are the following:
 - New cvar `cl_scaleSensWithFov` to automatically adjust mouse sensitivity
   automatically as FOV changes to preserve the same mouse feel
 - Additional keyboard editing shortcuts for editing text fields
+
+The code for the autoupdater, gamecode and UI has been removed from the ioquake3
+source tree.
 
 Hor+ FOV
 --------
