@@ -55,9 +55,9 @@ Command `cmdmode`
 -----------------
 
 Works like `messagemode1` or `messagemode2`. When command is entered a
-`]`-prompt that shows up in the top left. Then the user can type a command that
-will be executed when `Enter` is pressed. This mode has access to all editing
-commands that are available in the normal console.
+`]`-prompt shows up in the top left. Then the user can type a command that will
+be executed when `Enter` is pressed. When in this mode the user has access to
+all editing commands that are available in the normal console.
 
 Editing text fields
 -------------------
