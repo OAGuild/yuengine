@@ -156,6 +156,18 @@ void Con_MessageMode4_f (void) {
 
 /*
 ================
+Con_CmdMode_f
+================
+*/
+void Con_CmdMode_f (void) {
+	Field_Clear( &g_consoleField );
+	cmdmode = qtrue;
+	g_consoleField.widthInChars = 30;
+	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
+}
+
+/*
+================
 Con_Clear_f
 ================
 */
@@ -374,6 +386,7 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand ("messagemode3", Con_MessageMode3_f);
 	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
+	Cmd_AddCommand ("cmdmode", Con_CmdMode_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
@@ -627,6 +640,12 @@ void Con_DrawNotify (void)
 		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
 	}
+	else if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE && cmdmode )
+	{
+		SCR_DrawBigString (8, v, "]", 1.0f, qfalse );
+		Field_BigDraw( &g_consoleField, BIGCHAR_WIDTH, v,
+			SCREEN_WIDTH - BIGCHAR_WIDTH, qtrue, qtrue );
+	}
 
 }
 
@@ -782,7 +801,7 @@ Scroll it up or down
 */
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
-	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
+	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE && !cmdmode )
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible

@@ -20,6 +20,7 @@ New features implemented in Yu Engine are the following:
 - New cvar `cl_scaleSensWithFov` to automatically adjust mouse sensitivity
   automatically as FOV changes to preserve the same mouse feel
 - Additional keyboard editing shortcuts for editing text fields
+- `cmdmode` (like messagemodes) for quickly entering console commands
 
 The code for the autoupdater, gamecode and UI has been removed from the ioquake3
 source tree.
@@ -49,6 +50,14 @@ exact value of the `sensitivity` cvar is used at 90 degree FOV. Then it
 increases or decreases as the FOV changes.
 
 Default value for `cl_scaleSensWithFov` is `0`.
+
+Command `cmdmode`
+-----------------
+
+Works like `messagemode1` or `messagemode2`. When command is entered a
+`]`-prompt that shows up in the top left. Then the user can type a command that
+will be executed when `Enter` is pressed. This mode has access to all editing
+commands that are available in the normal console.
 
 Editing text fields
 -------------------

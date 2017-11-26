@@ -41,6 +41,7 @@ field_t		g_consoleField = { .undobuf = &g_consoleUndobuf, .yankbuf = &yankbuf };
 undobuf_t	chatUndobuf;
 field_t		chatField = { .undobuf = &chatUndobuf, .yankbuf = &yankbuf };
 qboolean	chat_team;
+qboolean	cmdmode;
 
 int			chat_playerNum;
 
@@ -652,8 +653,21 @@ void Console_Key (int key) {
 		return;
 	}
 
+	if (key == K_ESCAPE) {
+		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
+		cmdmode = qfalse;
+		return;
+	}
+
 	// enter finishes the line
 	if ( key == K_ENTER || key == K_KP_ENTER ) {
+
+		// reset if cmdmode
+		if ( cmdmode ) {
+			Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
+			cmdmode = qfalse;
+		}
+
 		// if not in the game explicitly prepend a slash if needed
 		if ( clc.state != CA_ACTIVE && con_autochat->integer &&
 				g_consoleField.buffer[0] &&
@@ -1318,6 +1332,12 @@ void CL_KeyDownEvent( int key, unsigned time )
 		if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
 			// clear message mode
 			Message_Key( key );
+			return;
+		}
+
+		if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
+			// clear command mode
+			Console_Key( key );
 			return;
 		}
 
