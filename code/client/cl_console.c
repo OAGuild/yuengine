@@ -405,6 +405,7 @@ void Con_Shutdown(void)
 	Cmd_RemoveCommand("messagemode2");
 	Cmd_RemoveCommand("messagemode3");
 	Cmd_RemoveCommand("messagemode4");
+	Cmd_RemoveCommand("cmdmode");
 	Cmd_RemoveCommand("clear");
 	Cmd_RemoveCommand("condump");
 }
