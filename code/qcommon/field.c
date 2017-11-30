@@ -675,10 +675,10 @@ static int BackWord( field_t *edit )
 {
 	int i = edit->cursor;
 
-	while ( i > 0 && !isalpha( edit->buffer[i - 1] ) )
+	while ( i > 0 && !isalnum( edit->buffer[i - 1] ) )
 		i--;
 
-	while ( i > 0 && isalpha( edit->buffer[i - 1] ) )
+	while ( i > 0 && isalnum( edit->buffer[i - 1] ) )
 		i--;
 
 	return i;
@@ -697,10 +697,10 @@ static int ForwardWord( field_t *edit )
 {
 	int i = edit->cursor;
 
-	while ( edit->buffer[i] && !isalpha( edit->buffer[i] ) )
+	while ( edit->buffer[i] && !isalnum( edit->buffer[i] ) )
 		i++;
 
-	while ( isalpha( edit->buffer[i] ) )
+	while ( isalnum( edit->buffer[i] ) )
 		i++;
 
 	return i;
