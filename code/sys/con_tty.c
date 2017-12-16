@@ -370,6 +370,34 @@ void CON_RedrawEditLine( void )
 	write(STDOUT_FILENO, output, strlen(output));
 }
 
+void CON_HistPrev( void )
+{
+	field_t *history = Hist_Prev();
+	if (history)
+	{
+		CON_Hide();
+		TTY_con = *history;
+		CON_Show();
+	}
+	CON_FlushIn();
+}
+
+void CON_HistNext( void )
+{
+	field_t *history = Hist_Next();
+	CON_Hide();
+	if (history)
+	{
+		TTY_con = *history;
+	}
+	else
+	{
+		Field_Clear(&TTY_con);
+	}
+	CON_Show();
+	CON_FlushIn();
+}
+
 /*
 ==================
 CON_Input
@@ -383,7 +411,6 @@ char *CON_Input( void )
 	qboolean meta_on;
 	int avail;
 	char key;
-	field_t *history;
 	size_t UNUSED_VAR size;
 
 	if(ttycon_on)
@@ -551,6 +578,14 @@ char *CON_Input( void )
 				CON_RedrawEditLine();
 				return NULL;
 			}
+			if (key == CTRL('N')) {
+				CON_HistNext();
+				return NULL;
+			}
+			if (key == CTRL('P')) {
+				CON_HistPrev();
+				return NULL;
+			}
 			if (key == '\t')
 			{
 				CON_Hide();
@@ -582,30 +617,11 @@ char *CON_Input( void )
 					switch (key)
 					{
 						case 'A':
-							history = Hist_Prev();
-							if (history)
-							{
-								CON_Hide();
-								TTY_con = *history;
-								CON_Show();
-							}
-							CON_FlushIn();
+							CON_HistPrev();
 							return NULL;
-							break;
 						case 'B':
-							history = Hist_Next();
-							CON_Hide();
-							if (history)
-							{
-								TTY_con = *history;
-							} else
-							{
-								Field_Clear(&TTY_con);
-							}
-							CON_Show();
-							CON_FlushIn();
+							CON_HistNext();
 							return NULL;
-							break;
 						case 'C':
 							if (ctrl_on)
 								Field_MoveForwardWord( &TTY_con );
