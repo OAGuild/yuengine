@@ -636,6 +636,14 @@ char *CON_Input( void )
 								Field_MoveBackChar( &TTY_con );
 							CON_RedrawEditLine();
 							return NULL;
+						case 'H':
+							Field_MoveLineStart( &TTY_con );
+							CON_RedrawEditLine();
+							return NULL;
+						case 'F':
+							Field_MoveLineEnd( &TTY_con );
+							CON_RedrawEditLine();
+							return NULL;
 					}
 				}
 			}
