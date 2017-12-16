@@ -379,6 +379,8 @@ char *CON_Input( void )
 {
 	// we use this when sending back commands
 	static char text[MAX_EDIT_LINE];
+	static qboolean lastchar_esc = qfalse;
+	qboolean meta_on;
 	int avail;
 	char key;
 	field_t *history;
@@ -389,211 +391,223 @@ char *CON_Input( void )
 		avail = read(STDIN_FILENO, &key, 1);
 		if (avail != -1)
 		{
+			meta_on = lastchar_esc;
+			lastchar_esc = qfalse;
+			if (key == '\x1B')
+			{
+				lastchar_esc = qtrue;
+			}
+
 			// we have something
 			// backspace?
 			// NOTE TTimo testing a lot of values .. seems it's the only way to get it to work everywhere
 			if ((key == TTY_erase) || (key == 127) || (key == 8))
 			{
-				Field_RuboutChar(&TTY_con);
+				if (meta_on)
+					Field_RuboutWord(&TTY_con);
+				else
+					Field_RuboutChar(&TTY_con);
 				CON_RedrawEditLine();
 				return NULL;
 			}
-			// check if this is a control char
-			if ((key) && (key) < ' ')
+			if (key == '\n')
 			{
-				if (key == '\n')
-				{
 #ifndef DEDICATED
-					// if not in the game explicitly prepend a slash if needed
-					if (clc.state != CA_ACTIVE && con_autochat->integer && TTY_con.cursor &&
-						TTY_con.buffer[0] != '/' && TTY_con.buffer[0] != '\\')
-					{
-						memmove(TTY_con.buffer + 1, TTY_con.buffer, sizeof(TTY_con.buffer) - 1);
-						TTY_con.buffer[0] = '\\';
-						TTY_con.cursor++;
-					}
+				// if not in the game explicitly prepend a slash if needed
+				if (clc.state != CA_ACTIVE && con_autochat->integer && TTY_con.cursor &&
+					TTY_con.buffer[0] != '/' && TTY_con.buffer[0] != '\\')
+				{
+					memmove(TTY_con.buffer + 1, TTY_con.buffer, sizeof(TTY_con.buffer) - 1);
+					TTY_con.buffer[0] = '\\';
+					TTY_con.cursor++;
+				}
 
-					if (TTY_con.buffer[0] == '/' || TTY_con.buffer[0] == '\\') {
-						Q_strncpyz(text, TTY_con.buffer + 1, sizeof(text));
-					} else if (TTY_con.cursor) {
-						if (con_autochat->integer) {
-							Com_sprintf(text, sizeof(text), "cmd say %s", TTY_con.buffer);
-						} else {
-							Q_strncpyz(text, TTY_con.buffer, sizeof(text));
-						}
+				if (TTY_con.buffer[0] == '/' || TTY_con.buffer[0] == '\\') {
+					Q_strncpyz(text, TTY_con.buffer + 1, sizeof(text));
+				} else if (TTY_con.cursor) {
+					if (con_autochat->integer) {
+						Com_sprintf(text, sizeof(text), "cmd say %s", TTY_con.buffer);
 					} else {
-						text[0] = '\0';
+						Q_strncpyz(text, TTY_con.buffer, sizeof(text));
 					}
+				} else {
+					text[0] = '\0';
+				}
 
-					// push it in history
-					Hist_Add(&TTY_con);
-					CON_Hide();
-					Com_Printf("%s%s\n", TTY_CONSOLE_PROMPT, TTY_con.buffer);
-					Field_Clear(&TTY_con);
-					CON_Show();
+				// push it in history
+				Hist_Add(&TTY_con);
+				CON_Hide();
+				Com_Printf("%s%s\n", TTY_CONSOLE_PROMPT, TTY_con.buffer);
+				Field_Clear(&TTY_con);
+				CON_Show();
 #else
-					// push it in history
-					Hist_Add(&TTY_con);
-					Q_strncpyz(text, TTY_con.buffer, sizeof(text));
-					Field_Clear(&TTY_con);
-					key = '\n';
-					size = write(STDOUT_FILENO, &key, 1);
-					size = write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, strlen(TTY_CONSOLE_PROMPT));
+				// push it in history
+				Hist_Add(&TTY_con);
+				Q_strncpyz(text, TTY_con.buffer, sizeof(text));
+				Field_Clear(&TTY_con);
+				key = '\n';
+				size = write(STDOUT_FILENO, &key, 1);
+				size = write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, strlen(TTY_CONSOLE_PROMPT));
 #endif
-					return text;
-				}
-				if (key == CTRL('V')) {
-					Field_ClipboardPaste( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('Z') || key == CTRL('_')) {
-					Field_Undo( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('Y')) {
-					Field_Yank( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				//if () {
-				//	Field_YankRotate( &TTY_con );
-				//	return NULL;
-				//}
-				if (key == CTRL('C')) { // (doesn't work on most terminals)
-					Field_Clear( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				//if () { 
-				//	Field_MakeWordUpper( &TTY_con );
-				//	return NULL;
-				//}
-				//if () { 
-				//	Field_MakeWordLower( &TTY_con );
-				//	return NULL;
-				//}
-				//if () {
-				//	Field_MakeWordCapitalized( &TTY_con );
-				//	return NULL;
-				//}
-				if (key == CTRL('T')) {
-					Field_TransposeChars( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('F')) {
-					Field_MoveForwardChar( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				//if () {
-				//	Field_MoveForwardWord( &TTY_con );
-				//	return NULL;
-				//}
-				if (key == CTRL('B')) {
-					Field_MoveBackChar( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				//if () {
-				//	Field_MoveBackWord( &TTY_con );
-				//	return NULL;
-				//}
-				if (key == CTRL('D')) {
-					Field_DeleteChar( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				//if () {
-				//	Field_DeleteWord( &TTY_con );
-				//	return NULL;
-				//}
-				if (key == CTRL('W')) {
-					Field_RuboutLongWord( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('U')) {
-					Field_RuboutLine( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('K')) {
-					Field_DeleteLine( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('A')) {
-					Field_MoveLineStart( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == CTRL('E')) {
-					Field_MoveLineEnd( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-				if (key == '\t')
-				{
-					CON_Hide();
-					Field_AutoComplete( &TTY_con );
-					CON_RedrawEditLine();
-					return NULL;
-				}
-
-				avail = read(STDIN_FILENO, &key, 1);
-				if (avail != -1)
-				{
-					// VT 100 keys
-					if (key == '[' || key == 'O')
-					{
-						avail = read(STDIN_FILENO, &key, 1);
-						if (avail != -1)
-						{
-							switch (key)
-							{
-								case 'A':
-									history = Hist_Prev();
-									if (history)
-									{
-										CON_Hide();
-										TTY_con = *history;
-										CON_Show();
-									}
-									CON_FlushIn();
-									return NULL;
-									break;
-								case 'B':
-									history = Hist_Next();
-									CON_Hide();
-									if (history)
-									{
-										TTY_con = *history;
-									} else
-									{
-										Field_Clear(&TTY_con);
-									}
-									CON_Show();
-									CON_FlushIn();
-									return NULL;
-									break;
-								case 'C':
-									return NULL;
-								case 'D':
-									return NULL;
-							}
-						}
-					}
-				}
-
-				Com_DPrintf("droping ISCTL sequence: %d, TTY_erase: %d\n", key, TTY_erase);
-				CON_FlushIn();
+				return text;
+			}
+			if (key == CTRL('V')) {
+				Field_ClipboardPaste( &TTY_con );
+				CON_RedrawEditLine();
 				return NULL;
 			}
-			Field_InsertChar( &TTY_con, key );
-			CON_RedrawEditLine();
+			if (key == CTRL('Z') || key == CTRL('_')) {
+				Field_Undo( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('Y')) {
+				Field_Yank( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'y' && meta_on) {
+				Field_YankRotate( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('C')) { // (doesn't work on most terminals)
+				Field_Clear( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'u' && meta_on) { 
+				Field_MakeWordUpper( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'l' && meta_on ) { 
+				Field_MakeWordLower( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'c' && meta_on ) {
+				Field_MakeWordCapitalized( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('T')) {
+				Field_TransposeChars( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('F')) {
+				Field_MoveForwardChar( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'f' && meta_on ) {
+				Field_MoveForwardWord( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('B')) {
+				Field_MoveBackChar( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'b' && meta_on) {
+				Field_MoveBackWord( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('D')) {
+				Field_DeleteChar( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (tolower(key) == 'd' && meta_on) {
+				Field_DeleteWord( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('W')) {
+				Field_RuboutLongWord( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('U')) {
+				Field_RuboutLine( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('K')) {
+				Field_DeleteLine( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('A')) {
+				Field_MoveLineStart( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == CTRL('E')) {
+				Field_MoveLineEnd( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+			if (key == '\t')
+			{
+				CON_Hide();
+				Field_AutoComplete( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
+
+			// VT 100 keys
+			if (meta_on && (key == '[' || key == 'O'))
+			{
+
+				avail = read(STDIN_FILENO, &key, 1);
+
+				if (avail != -1)
+				{
+					switch (key)
+					{
+						case 'A':
+							history = Hist_Prev();
+							if (history)
+							{
+								CON_Hide();
+								TTY_con = *history;
+								CON_Show();
+							}
+							CON_FlushIn();
+							return NULL;
+							break;
+						case 'B':
+							history = Hist_Next();
+							CON_Hide();
+							if (history)
+							{
+								TTY_con = *history;
+							} else
+							{
+								Field_Clear(&TTY_con);
+							}
+							CON_Show();
+							CON_FlushIn();
+							return NULL;
+							break;
+						case 'C':
+							Field_MoveForwardChar( &TTY_con );
+							return NULL;
+						case 'D':
+							Field_MoveBackChar( &TTY_con );
+							return NULL;
+					}
+				}
+			}
+
+			if (isprint(key)) {
+				Field_InsertChar( &TTY_con, key );
+				CON_RedrawEditLine();
+			}
 		}
 
 		return NULL;
