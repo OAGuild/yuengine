@@ -612,35 +612,45 @@ char *CON_Input( void )
 					}
 				}
 
+				// check for DELETE key
+				if (key == '3') {
+					avail = read(STDIN_FILENO, &key, 1);
+					if (key == '~') {
+						Field_DeleteChar( &TTY_con );
+						CON_RedrawEditLine();
+						return NULL;
+					}
+				}
+
 				if (avail != -1)
 				{
 					switch (key)
 					{
-						case 'A':
+						case 'A': // up arrow
 							CON_HistPrev();
 							return NULL;
-						case 'B':
+						case 'B': // down arrow
 							CON_HistNext();
 							return NULL;
-						case 'C':
-							if (ctrl_on)
-								Field_MoveForwardWord( &TTY_con );
-							else
-								Field_MoveForwardChar( &TTY_con );
-							CON_RedrawEditLine();
-							return NULL;
-						case 'D':
+						case 'D': // left arrow
 							if (ctrl_on)
 								Field_MoveBackWord( &TTY_con );
 							else
 								Field_MoveBackChar( &TTY_con );
 							CON_RedrawEditLine();
 							return NULL;
-						case 'H':
+						case 'C': // right arrow
+							if (ctrl_on)
+								Field_MoveForwardWord( &TTY_con );
+							else
+								Field_MoveForwardChar( &TTY_con );
+							CON_RedrawEditLine();
+							return NULL;
+						case 'H': // home
 							Field_MoveLineStart( &TTY_con );
 							CON_RedrawEditLine();
 							return NULL;
-						case 'F':
+						case 'F': // end
 							Field_MoveLineEnd( &TTY_con );
 							CON_RedrawEditLine();
 							return NULL;
