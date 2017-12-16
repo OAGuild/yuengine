@@ -341,6 +341,37 @@ void CON_Init( void )
 
 /*
 ==================
+CON_RedrawEditLine
+
+Redraws the entire edit line
+==================
+*/
+void CON_RedrawEditLine( void )
+{
+	// should be enough to fit the entire output
+	char output[
+		MAX_EDIT_LINE + sizeof "\r\x1B[K" TTY_CONSOLE_PROMPT + 8
+	]; 
+
+	// how many columns the cursor should move back after edit line has been
+	// drawn
+	int curmove = strlen(TTY_con.buffer) + 1 - TTY_con.cursor;
+	if (curmove < 0) {
+		curmove = 0;
+	}
+
+	// fill output buffer with the output
+	Com_sprintf(
+		output, sizeof(output),
+		"\r\x1B[2K" TTY_CONSOLE_PROMPT "%s \x1B[%dD",
+		TTY_con.buffer, curmove);
+
+	// write output
+	write(STDOUT_FILENO, output, strlen(output));
+}
+
+/*
+==================
 CON_Input
 ==================
 */
@@ -363,12 +394,8 @@ char *CON_Input( void )
 			// NOTE TTimo testing a lot of values .. seems it's the only way to get it to work everywhere
 			if ((key == TTY_erase) || (key == 127) || (key == 8))
 			{
-				if (TTY_con.cursor > 0)
-				{
-					TTY_con.cursor--;
-					TTY_con.buffer[TTY_con.cursor] = '\0';
-					CON_Back();
-				}
+				Field_RuboutChar(&TTY_con);
+				CON_RedrawEditLine();
 				return NULL;
 			}
 			// check if this is a control char
@@ -415,13 +442,107 @@ char *CON_Input( void )
 #endif
 					return text;
 				}
+				if (key == CTRL('V')) {
+					Field_ClipboardPaste( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('Z') || key == CTRL('_')) {
+					Field_Undo( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('Y')) {
+					Field_Yank( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				//if () {
+				//	Field_YankRotate( &TTY_con );
+				//	return NULL;
+				//}
+				if (key == CTRL('C')) { // (doesn't work on most terminals)
+					Field_Clear( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				//if () { 
+				//	Field_MakeWordUpper( &TTY_con );
+				//	return NULL;
+				//}
+				//if () { 
+				//	Field_MakeWordLower( &TTY_con );
+				//	return NULL;
+				//}
+				//if () {
+				//	Field_MakeWordCapitalized( &TTY_con );
+				//	return NULL;
+				//}
+				if (key == CTRL('T')) {
+					Field_TransposeChars( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('F')) {
+					Field_MoveForwardChar( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				//if () {
+				//	Field_MoveForwardWord( &TTY_con );
+				//	return NULL;
+				//}
+				if (key == CTRL('B')) {
+					Field_MoveBackChar( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				//if () {
+				//	Field_MoveBackWord( &TTY_con );
+				//	return NULL;
+				//}
+				if (key == CTRL('D')) {
+					Field_DeleteChar( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				//if () {
+				//	Field_DeleteWord( &TTY_con );
+				//	return NULL;
+				//}
+				if (key == CTRL('W')) {
+					Field_RuboutLongWord( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('U')) {
+					Field_RuboutLine( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('K')) {
+					Field_DeleteLine( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('A')) {
+					Field_MoveLineStart( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
+				if (key == CTRL('E')) {
+					Field_MoveLineEnd( &TTY_con );
+					CON_RedrawEditLine();
+					return NULL;
+				}
 				if (key == '\t')
 				{
 					CON_Hide();
 					Field_AutoComplete( &TTY_con );
-					CON_Show();
+					CON_RedrawEditLine();
 					return NULL;
 				}
+
 				avail = read(STDIN_FILENO, &key, 1);
 				if (avail != -1)
 				{
@@ -466,17 +587,13 @@ char *CON_Input( void )
 						}
 					}
 				}
+
 				Com_DPrintf("droping ISCTL sequence: %d, TTY_erase: %d\n", key, TTY_erase);
 				CON_FlushIn();
 				return NULL;
 			}
-			if (TTY_con.cursor >= sizeof(text) - 1)
-				return NULL;
-			// push regular character
-			TTY_con.buffer[TTY_con.cursor] = key;
-			TTY_con.cursor++; // next char will always be '\0'
-			// print the current line (this is differential)
-			size = write(STDOUT_FILENO, &key, 1);
+			Field_InsertChar( &TTY_con, key );
+			CON_RedrawEditLine();
 		}
 
 		return NULL;
@@ -486,6 +603,8 @@ char *CON_Input( void )
 		int     len;
 		fd_set  fdset;
 		struct timeval timeout;
+
+		Com_Printf("EOF\n");
 
 		FD_ZERO(&fdset);
 		FD_SET(STDIN_FILENO, &fdset); // stdin
