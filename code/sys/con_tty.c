@@ -562,8 +562,20 @@ char *CON_Input( void )
 			// VT 100 keys
 			if (meta_on && (key == '[' || key == 'O'))
 			{
-
+				qboolean ctrl_on = qfalse;
 				avail = read(STDIN_FILENO, &key, 1);
+
+				// check if the user pressed CTRL-<ARROW>
+				if (key == '1') {
+					avail = read(STDIN_FILENO, &key, 1);
+					if (key == ';') {
+						avail = read(STDIN_FILENO, &key, 1);
+						if (key == '5') {
+							ctrl_on = qtrue;
+							avail = read(STDIN_FILENO, &key, 1);
+						}
+					}
+				}
 
 				if (avail != -1)
 				{
@@ -595,10 +607,18 @@ char *CON_Input( void )
 							return NULL;
 							break;
 						case 'C':
-							Field_MoveForwardChar( &TTY_con );
+							if (ctrl_on)
+								Field_MoveForwardWord( &TTY_con );
+							else
+								Field_MoveForwardChar( &TTY_con );
+							CON_RedrawEditLine();
 							return NULL;
 						case 'D':
-							Field_MoveBackChar( &TTY_con );
+							if (ctrl_on)
+								Field_MoveBackWord( &TTY_con );
+							else
+								Field_MoveBackChar( &TTY_con );
+							CON_RedrawEditLine();
 							return NULL;
 					}
 				}
