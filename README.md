@@ -63,8 +63,8 @@ Editing text fields
 -------------------
 
 Additional keyboard commands have been added for editing text fields. These
-commands are available when typing commands in the in-game console and when
-writing chat messages.
+commands are available when typing commands in the in-game console, when writing
+chat messages or using the tty-console.
 
 The keyboard shortcuts are similar to the shortcuts common in UNIX shells or
 common in general GUI software.
