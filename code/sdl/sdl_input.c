@@ -336,6 +336,10 @@ static int IN_TranslateKeyToCtrlChar( int key ) {
 		// fallthrough
 	case K_BACKSPACE:
 		return CTRL( 'h' );
+	case K_TAB:
+		return '\t';
+	case K_ESCAPE:
+		return '\x1B';
 	}
 
 	if ( (key >= '@' && key < '_') || (key >= 'a' && key <= 'z') )
@@ -1026,7 +1030,9 @@ static void IN_ProcessEvents( void )
 				if( ( key = IN_TranslateSDLToQ3Key( &e.key.keysym, qtrue ) ) )
 					Com_QueueEvent( in_eventTime, SE_KEY, key, qtrue, 0, NULL );
 
-				if( key == K_BACKSPACE || keys[K_CTRL].down ) {
+				if( key == K_BACKSPACE || key == K_TAB || key == K_ESCAPE ||
+					keys[K_CTRL].down )
+				{
 					int k = IN_TranslateKeyToCtrlChar( key );
 					if ( k != -1 )
 						Com_QueueEvent( in_eventTime, SE_CHAR, k, 0, 0, NULL );

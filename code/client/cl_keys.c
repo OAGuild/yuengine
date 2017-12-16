@@ -641,18 +641,12 @@ CONSOLE LINE EDITING
 
 /*
 ====================
-Console_Key
+Console_KeyDownEventEvent
 
 Handles history and console scrollback
 ====================
 */
-void Console_Key (int key) {
-	// ctrl-L clears screen
-	if ( key == 'l' && keys[K_CTRL].down ) {
-		Cbuf_AddText ("clear\n");
-		return;
-	}
-
+void Console_KeyDownEvent (int key) {
 	if (key == K_ESCAPE) {
 		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
 		cmdmode = qfalse;
@@ -714,13 +708,6 @@ void Console_Key (int key) {
 		if ( clc.state == CA_DISCONNECTED ) {
 			SCR_UpdateScreen ();	// force an update, because the command
 		}							// may take some time
-		return;
-	}
-
-	// command completion
-
-	if (key == K_TAB) {
-		Field_AutoComplete(&g_consoleField);
 		return;
 	}
 
@@ -792,6 +779,28 @@ void Console_Key (int key) {
 
 	// pass to the normal editline routine
 	Field_KeyDownEvent( &g_consoleField, key );
+}
+
+/*
+==================
+Console_CharEvent
+==================
+*/
+void Console_CharEvent( int ch ) {
+	// ctrl-L clears screen
+	if ( ch == CTRL( 'l' ) ) {
+		Cbuf_AddText( "clear\n" );
+		return;
+	}
+
+	// tab completes command
+	if ( ch == '\t' ) {
+		Field_AutoComplete( &g_consoleField );
+		return;
+	}
+
+	// pass to the normal editline routine
+	Field_CharEvent( &g_consoleField, ch );
 }
 
 //============================================================================
@@ -1337,7 +1346,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 
 		if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
 			// clear command mode
-			Console_Key( key );
+			Console_KeyDownEvent( key );
 			return;
 		}
 
@@ -1369,7 +1378,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 
 	// distribute the key down event to the apropriate handler
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) {
-		Console_Key( key );
+		Console_KeyDownEvent( key );
 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
 		if ( uivm ) {
 			VM_Call( uivm, UI_KEY_EVENT, key, qtrue );
@@ -1381,7 +1390,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 	} else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) {
 		Message_Key( key );
 	} else if ( clc.state == CA_DISCONNECTED ) {
-		Console_Key( key );
+		Console_KeyDownEvent( key );
 	}
 }
 
@@ -1452,7 +1461,7 @@ void CL_CharEvent( int key ) {
 	// distribute the key down event to the apropriate handler
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
 	{
-		Field_CharEvent( &g_consoleField, key );
+		Console_CharEvent( key );
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_UI )
 	{
