@@ -21,6 +21,7 @@ New features implemented in Yu Engine are the following:
   automatically as FOV changes to preserve the same mouse feel
 - Additional keyboard editing shortcuts for editing text fields
 - `cmdmode` (like messagemodes) for quickly entering console commands
+- Improved line-editing in TTY console
 
 The code for the autoupdater, gamecode and UI has been removed from the ioquake3
 source tree.
@@ -125,3 +126,21 @@ Console specific UNIX commandline-style keyboard shortcuts:
 - `^P`, go back in command in history
 - `^F`, go forward in command in history
 - `^L`, clear console screen
+
+Improved line editing in tty-console
+------------------------------------
+
+When running ioquake3 or OpenArena it is also possible to enter commands through
+a tty-console. This is especially useful for dedicated servers without an
+in-game console. Previously the editing-functionality was limited to entering
+characters, and recalling previously entered commands in history.
+
+This has been improved so the user has access to almost all keyboard commands
+that are available in the in-game console. The commands not available are
+`CTRL-Del` and `CTRL-Backspace`, and console-specific commands for scrolling and
+clearing.
+
+In the tty-console, the keyboard commands using ALT is accessed by prefixing the
+key with `ESC`. So `ESC-b` is eqvivalent to `ALT-b` in the in-game console.
+Most terminal emulators can be configured to make `ALT` send `ESC`-codes in this
+way.
