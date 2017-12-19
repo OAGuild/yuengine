@@ -508,7 +508,7 @@ void CL_MouseMove(usercmd_t *cmd)
 		// the user would have if playing on 90 degree FOV. This
 		// sensitivity value gets scaled when the user is playing at a
 		// different FOV so the mouse feels the same.
-		float scale = tan(RADIANS(cl.cgameFovX) / 2);
+		float scale = tan(RADIANS(cl.cgameFovX) / 2.0f);
 		mx *= scale;
 		my *= scale;
 	} else {
@@ -527,14 +527,24 @@ void CL_MouseMove(usercmd_t *cmd)
 		cmd->rightmove = ClampChar(cmd->rightmove + m_side->value * mx);
 	} else {
 		cl.viewangles[YAW] -= m_yaw->value * mx;
-		while (cl.viewangles[YAW] > 180.0)
-			cl.viewangles[YAW] -= 360.0;
-		while (cl.viewangles[YAW] < -180.0)
-			cl.viewangles[YAW] += 360.0;
+
+		// limit yaw between -180 and 180 to avoid accumulating
+		// floating-point precision errors
+		while (cl.viewangles[YAW] < -180.0f)
+			cl.viewangles[YAW] += 360.0f;
+		while (cl.viewangles[YAW] > 180.0f)
+			cl.viewangles[YAW] -= 360.0f;
 	}
 
 	if ((in_mlooking || cl_freelook->integer) && !in_strafe.active) {
 		cl.viewangles[PITCH] += m_pitch->value * my;
+
+		// limit pitch between -90 and 90 to avoid accumulating
+		// floating-point precision errors
+		if (cl.viewangles[PITCH] < -90.0f)
+			cl.viewangles[PITCH] = -90.0f;
+		else if (cl.viewangles[PITCH] > 90.0f)
+			cl.viewangles[PITCH] = 90.0f;
 	} else {
 		cmd->forwardmove = ClampChar(cmd->forwardmove - m_forward->value * my);
 	}
