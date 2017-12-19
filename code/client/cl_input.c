@@ -535,10 +535,6 @@ void CL_MouseMove(usercmd_t *cmd)
 
 	if ((in_mlooking || cl_freelook->integer) && !in_strafe.active) {
 		cl.viewangles[PITCH] += m_pitch->value * my;
-		while (cl.viewangles[PITCH] > 180.0)
-			cl.viewangles[PITCH] -= 360.0;
-		while (cl.viewangles[PITCH] < -180.0)
-			cl.viewangles[PITCH] += 360.0;
 	} else {
 		cmd->forwardmove = ClampChar(cmd->forwardmove - m_forward->value * my);
 	}
