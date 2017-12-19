@@ -523,15 +523,27 @@ void CL_MouseMove(usercmd_t *cmd)
 	}
 
 	// add mouse X/Y movement to cmd
-	if(in_strafe.active)
+	if(in_strafe.active) {
 		cmd->rightmove = ClampChar(cmd->rightmove + m_side->value * mx);
-	else
+	} else {
 		cl.viewangles[YAW] -= m_yaw->value * mx;
+		while (cl.viewangles[YAW] > 180.0)
+			cl.viewangles[YAW] -= 360.0;
+		while (cl.viewangles[YAW] < -180.0)
+			cl.viewangles[YAW] += 360.0;
+	}
 
-	if ((in_mlooking || cl_freelook->integer) && !in_strafe.active)
+	if ((in_mlooking || cl_freelook->integer) && !in_strafe.active) {
 		cl.viewangles[PITCH] += m_pitch->value * my;
-	else
+		while (cl.viewangles[PITCH] > 180.0)
+			cl.viewangles[PITCH] -= 360.0;
+		while (cl.viewangles[PITCH] < -180.0)
+			cl.viewangles[PITCH] += 360.0;
+	} else {
 		cmd->forwardmove = ClampChar(cmd->forwardmove - m_forward->value * my);
+	}
+
+	Com_Printf("yaw = %f\npitch = %f\n", cl.viewangles[YAW], cl.viewangles[PITCH]);
 }
 
 
