@@ -542,8 +542,6 @@ void CL_MouseMove(usercmd_t *cmd)
 	} else {
 		cmd->forwardmove = ClampChar(cmd->forwardmove - m_forward->value * my);
 	}
-
-	Com_Printf("yaw = %f\npitch = %f\n", cl.viewangles[YAW], cl.viewangles[PITCH]);
 }
 
 
