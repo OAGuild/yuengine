@@ -162,13 +162,12 @@ static void CON_Show( void )
 		ttycon_hide--;
 		if (ttycon_hide == 0)
 		{
-			size_t UNUSED_VAR size;
-			size = write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, strlen(TTY_CONSOLE_PROMPT));
 			if (TTY_con.cursor)
 			{
+				write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, strlen(TTY_CONSOLE_PROMPT));
 				for (i=0; i<TTY_con.cursor; i++)
 				{
-					size = write(STDOUT_FILENO, TTY_con.buffer+i, 1);
+					write(STDOUT_FILENO, TTY_con.buffer+i, 1);
 				}
 			}
 		}
@@ -588,9 +587,11 @@ char *CON_Input( void )
 			}
 			if (key == '\t')
 			{
-				CON_Hide();
-				Field_AutoComplete( &TTY_con );
-				CON_RedrawEditLine();
+				if (*TTY_con.buffer) {
+					CON_Hide();
+					Field_AutoComplete( &TTY_con );
+					CON_Show();
+				}
 				return NULL;
 			}
 
