@@ -539,12 +539,12 @@ void CL_MouseMove(usercmd_t *cmd)
 	if ((in_mlooking || cl_freelook->integer) && !in_strafe.active) {
 		cl.viewangles[PITCH] += m_pitch->value * my;
 
-		// limit pitch between -90 and 90 to avoid accumulating
+		// limit pitch between -180 and 180 to avoid accumulating
 		// floating-point precision errors
-		if (cl.viewangles[PITCH] < -90.0f)
-			cl.viewangles[PITCH] = -90.0f;
-		else if (cl.viewangles[PITCH] > 90.0f)
-			cl.viewangles[PITCH] = 90.0f;
+		while (cl.viewangles[PITCH] < -180.0f)
+			cl.viewangles[PITCH] += 360.0f;
+		while (cl.viewangles[PITCH] > 180.0f)
+			cl.viewangles[PITCH] -= 360.0f;
 	} else {
 		cmd->forwardmove = ClampChar(cmd->forwardmove - m_forward->value * my);
 	}
@@ -630,13 +630,6 @@ usercmd_t CL_CreateCmd( void ) {
 
 	// get basic movement from joystick
 	CL_JoystickMove( &cmd );
-
-	// check to make sure the angles haven't wrapped
-	if ( cl.viewangles[PITCH] - oldAngles[PITCH] > 90 ) {
-		cl.viewangles[PITCH] = oldAngles[PITCH] + 90;
-	} else if ( oldAngles[PITCH] - cl.viewangles[PITCH] > 90 ) {
-		cl.viewangles[PITCH] = oldAngles[PITCH] - 90;
-	} 
 
 	// store out the final values
 	CL_FinishMove( &cmd );
