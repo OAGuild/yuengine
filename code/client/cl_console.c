@@ -73,6 +73,12 @@ void Con_ToggleConsole_f (void) {
 		return;
 	}
 
+	// if in command mode, switch to regular console
+	if ( cmdmode ) {
+		cmdmode = qfalse;
+		return;
+	}
+
 	if ( con_autoclear->integer ) {
 		Field_Clear( &g_consoleField );
 	}
