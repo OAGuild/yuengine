@@ -9,7 +9,9 @@ Build instructions
 ------------------
 
 See [the README of ioquake3](./ioq3-readme.md) for instructions on how to
-compile and install this software.
+compile and install this software. Note that code for basegame, missionpack and
+auto-updater has been completely removed from the source tree. So Ignore all
+documentation related to building those.
 
 Feature list
 ------------
@@ -22,9 +24,6 @@ New features implemented in Yu Engine are the following:
 - Additional keyboard editing shortcuts for editing text fields
 - `cmdmode` (like messagemodes) for quickly entering console commands
 - Improved line-editing in TTY console
-
-The code for the autoupdater, gamecode and UI has been removed from the ioquake3
-source tree.
 
 Hor+ FOV
 --------
