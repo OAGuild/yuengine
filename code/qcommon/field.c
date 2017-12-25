@@ -252,55 +252,6 @@ ret:
 }
 
 /*
-================
-MakeUpperTo
-
-Makes text uppercase from the cursor to position
-================
-*/
-static void MakeUpperTo( field_t *edit, int to )
-{
-	int cur = edit->cursor;
-	int len = strlen( edit->buffer );
-	int i;
-
-	if ( to < 0 )
-		to = 0;
-	else if ( to > len )
-		to = len;
-
-	for ( i = cur; i != to; to < cur ? i-- : i++ ) {
-		edit->buffer[i] = toupper( edit->buffer[i] );
-	}
-	MoveTo( edit, to );
-}
-
-/*
-================
-MakeLowerTo
-
-Makes text lowercase from the cursor to position
-================
-*/
-static void MakeLowerTo( field_t *edit, size_t to )
-{
-	int cur = edit->cursor;
-	int len = strlen(edit->buffer);
-	int i;
-
-	if ( to < 0 )
-		to = 0;
-	else if ( to > len )
-		to = len;
-
-	for ( i = cur; i != to; to < cur ? i-- : i++ ) {
-		edit->buffer[i] = tolower( edit->buffer[i] );
-	}
-	MoveTo( edit, to );
-}
-
-
-/*
 ===========================================
 command line completion
 ===========================================
@@ -967,24 +918,77 @@ void Field_TransposeWords( field_t *edit )
 	edit->cursor = end2;
 }
 
+/*
+================
+Field_MakeWordUpper
+================
+*/
 void Field_MakeWordUpper( field_t *edit )
 {
+	int cur = edit->cursor;
+	int to = ForwardWord( edit );
+	int len = strlen( edit->buffer );
+	int i;
+
 	PushUndo( edit, UNDO_TOUPPER_WORD );
-	MakeUpperTo( edit, ForwardWord( edit ) );
+
+	if ( to > len )
+		to = len;
+
+	for ( i = cur; i < to; i++ ) {
+		edit->buffer[i] = toupper( edit->buffer[i] );
+	}
+	MoveTo( edit, to );
 }
 
+/*
+================
+Field_MakeWordLower
+================
+*/
 void Field_MakeWordLower( field_t *edit )
 {
+	int to = ForwardWord( edit );
+	int cur = edit->cursor;
+	int len = strlen(edit->buffer);
+	int i;
+
 	PushUndo( edit, UNDO_TOLOWER_WORD );
-	MakeLowerTo( edit, ForwardWord( edit ) );
+
+	if ( to > len )
+		to = len;
+
+	for ( i = cur; i < to; i++ ) {
+		edit->buffer[i] = tolower( edit->buffer[i] );
+	}
+	MoveTo( edit, to );
 }
+
 
 void Field_MakeWordCapitalized( field_t *edit )
 {
+
+	int cur = edit->cursor;
+	int to = ForwardWord( edit );
+	int len = strlen( edit->buffer );
+	int i;
+
 	PushUndo( edit, UNDO_CAPITALIZE_WORD );
-	MakeUpperTo( edit, BackWord( edit ) );
-	edit->cursor++;
-	MakeLowerTo( edit, ForwardWord( edit ) );
+
+	if ( to > len )
+		to = len;
+
+	for ( i = cur; i < to; i++ ) {
+		if ( isalnum( edit->buffer[i] ) ) {
+			edit->buffer[i] = toupper( edit->buffer[i] );
+			i++;
+			break;
+		}
+	}
+	for ( ; i < to; i++ ) {
+		edit->buffer[i] = tolower( edit->buffer[i] );
+	}
+	MoveTo( edit, to );
 }
 
 void Field_InsertChar( field_t *edit, char ch )
