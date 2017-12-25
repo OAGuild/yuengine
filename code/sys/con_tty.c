@@ -522,6 +522,11 @@ char *CON_Input( void )
 				CON_RedrawEditLine();
 				return NULL;
 			}
+			if (tolower(key) == 't' && meta_on ) {
+				Field_TransposeWords( &TTY_con );
+				CON_RedrawEditLine();
+				return NULL;
+			}
 			if (key == CTRL('F')) {
 				Field_MoveForwardChar( &TTY_con );
 				CON_RedrawEditLine();

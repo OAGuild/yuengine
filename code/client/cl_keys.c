@@ -551,6 +551,12 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
+	if ( ch == 't' && keys[K_ALT].down ) {
+		// alt-t transpose words
+		Field_TransposeWords( edit );
+		return;
+	}
+
 	if ( ch == CTRL( 'F' ) ) {	// ^F moves to next char
 		Field_MoveForwardChar( edit );
 		return;

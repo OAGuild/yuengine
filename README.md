@@ -105,6 +105,7 @@ character):
 - `ALT-F`, move cursor right one word (new)
 - `ALT-F`, move cursor right one word (new)
 - `^T`, transpose characters (new)
+- `ALT-T`, transpose words (new)
 - `^_`, undo last change (new)
 - `^Y`, yank from kill ring (new)
 - `ALT-Y`, rotate kill ring (new)

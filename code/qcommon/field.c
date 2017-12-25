@@ -54,6 +54,7 @@ typedef enum {
 	UNDO_YANK,
 	UNDO_CLIPBOARD_PASTE,
 	UNDO_TRANSPOSE_CHARS,
+	UNDO_TRANSPOSE_WORDS,
 
 	// commands that if repeated will be concatenated to one entry in undo
 	// history
@@ -206,7 +207,7 @@ Insert content of string at cursor position
 */
 static void InsertString( field_t *edit, const char *text )
 {
-	while ( *text )
+	while ( *text ) // TODO can be done in one operation
 		InsertChar( edit, *text++ );
 }
 
@@ -916,6 +917,55 @@ void Field_TransposeChars( field_t *edit )
 	edit->cursor++;
 }
 
+void Field_TransposeWords( field_t *edit )
+{
+	int start = edit->cursor;
+
+	// find positions of words
+	//edit->cursor = BackWord( edit );
+	int end2 = edit->cursor = ForwardWord( edit );
+
+	// if the cursor is at the last word on the line
+	if (edit->buffer[edit->cursor] == '\0') {
+		// use to current position as the word end position
+		//
+		// note that we could do BackWord followed by ForwardWord to
+		// get the last word (and not some word delimiter) but doing it
+		// this way behaves like readline
+		end2 = edit->cursor = start;
+	}
+
+	int beg2 = edit->cursor = BackWord( edit );
+	int beg1 = edit->cursor = BackWord( edit );
+	int end1 = edit->cursor = ForwardWord( edit );
+
+	// check that it really is two words
+	if ((beg1 == beg2) || (beg2 < end1)) {
+		edit->cursor = start;
+		return;
+	}
+
+	PushUndo( edit, UNDO_TRANSPOSE_WORDS );
+
+	// copy words
+	char word1[MAX_EDIT_LINE];
+	char word2[MAX_EDIT_LINE];
+	Q_strncpyz( word1, edit->buffer + beg1, end1 - beg1 + 1 );
+	Q_strncpyz( word2, edit->buffer + beg2, end2 - beg2 + 1 );
+
+	// start swapping 2nd word so chars haven't moved
+	edit->cursor = beg2;
+	DeleteTo( edit, end2 );
+	InsertString( edit, word1 );
+
+	// swap 1st word
+	edit->cursor = beg1;
+	DeleteTo(edit, end1);
+	InsertString( edit, word2 );
+
+	// set cursor position
+	edit->cursor = end2;
+}
 
 void Field_MakeWordUpper( field_t *edit )
 {
@@ -939,7 +989,6 @@ void Field_MakeWordCapitalized( field_t *edit )
 
 void Field_InsertChar( field_t *edit, char ch )
 {
-
 	PushUndo( edit, UNDO_INSERT_CHAR );
 	InsertChar( edit, ch );
 }

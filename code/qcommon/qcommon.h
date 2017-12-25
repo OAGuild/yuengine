@@ -807,6 +807,7 @@ void Field_DeleteWord( field_t *edit );
 void Field_DeleteLine( field_t *edit );
 
 void Field_TransposeChars( field_t *edit );
+void Field_TransposeWords( field_t *edit );
 
 void Field_MakeWordUpper( field_t *edit );
 void Field_MakeWordLower( field_t *edit );
