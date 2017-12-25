@@ -518,7 +518,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'y' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 'y' && keys[K_ALT].down ) {
 		Field_YankRotate( edit );
 		return;
 	}
@@ -528,19 +528,19 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'u' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 'u' && keys[K_ALT].down ) {
 		// alt-u makes word uppercase
 		Field_MakeWordUpper( edit );
 		return;
 	}
 
-	if ( ch == 'l' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 'l' && keys[K_ALT].down ) {
 		// alt-l makes word lowercase
 		Field_MakeWordLower( edit );
 		return;
 	}
 
-	if ( ch == 'c' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 'c' && keys[K_ALT].down ) {
 		// alt-c makes word capitalized
 		Field_MakeWordCapitalized( edit );
 		return;
@@ -551,7 +551,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 't' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 't' && keys[K_ALT].down ) {
 		// alt-t transpose words
 		Field_TransposeWords( edit );
 		return;
@@ -562,7 +562,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'f' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 'f' && keys[K_ALT].down ) {
 		// alt-f moves to next word
 		Field_MoveForwardWord( edit );
 		return;
@@ -573,7 +573,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'b' && keys[K_ALT].down ) {
+	if ( tolower( ch ) == 'b' && keys[K_ALT].down ) {
 		// alt-b moves to previous word
 		Field_MoveBackWord( edit );
 		return;
@@ -584,7 +584,7 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'd' && keys[K_ALT].down) {
+	if ( tolower( ch ) == 'd' && keys[K_ALT].down) {
 		// alt-d deletes to end of word
 		Field_DeleteWord( edit );
 		return;
