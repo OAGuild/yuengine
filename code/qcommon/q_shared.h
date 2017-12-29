@@ -397,11 +397,11 @@ extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 #define SMALLCHAR_WIDTH		8
 #define SMALLCHAR_HEIGHT	16
 
-#define BIGCHAR_WIDTH		16
-#define BIGCHAR_HEIGHT		16
+#define BIGCHAR_WIDTH		12
+#define BIGCHAR_HEIGHT		24
 
-#define	GIANTCHAR_WIDTH		32
-#define	GIANTCHAR_HEIGHT	48
+#define	GIANTCHAR_WIDTH		18
+#define	GIANTCHAR_HEIGHT	36
 
 extern	vec4_t		colorBlack;
 extern	vec4_t		colorRed;

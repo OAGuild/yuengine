@@ -38,6 +38,14 @@ typedef struct _TargaHeader {
 	unsigned char	pixel_size, attributes;
 } TargaHeader;
 
+#if YUOA_OVERRIDE_FONT
+
+qboolean shouldOverrideWithFont( const char *name ) {
+	return Q_stricmp( name, "gfx/2d/bigchars.tga" ) == 0;
+}
+
+#endif
+
 void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 {
 	unsigned	columns, rows, numPixels;
@@ -60,6 +68,38 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	if(height)
 		*height = 0;
 
+#if YUOA_OVERRIDE_FONT
+	qboolean should_free = qtrue;
+
+	if ( shouldOverrideWithFont( name ) ) {
+		static byte bigchars_tga[] = {
+#  if YUOA_OVERRIDE_FONT == 1
+#    include "bigchars_tga16.h"
+#  elif YUOA_OVERRIDE_FONT == 2
+#    include "bigchars_tga32.h"
+#  elif YUOA_OVERRIDE_FONT == 3
+#    include "bigchars_tga64.h"
+#  else
+#    error "invalid value for YUOA_OVERRIDE_FONT"
+#  endif
+		};
+
+		// override with font in compiled executable
+		length = sizeof bigchars_tga;
+		buffer.b = bigchars_tga;
+		should_free = qfalse;
+	} else {
+
+		//
+		// load the file
+		//
+		length = ri.FS_ReadFile ( ( char * ) name, &buffer.v);
+		if (!buffer.b || length < 0) {
+			return;
+		}
+
+	}
+#else
 	//
 	// load the file
 	//
@@ -67,6 +107,7 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	if (!buffer.b || length < 0) {
 		return;
 	}
+#endif // YUOA_OVERRIDE_FONT
 
 	if(length < 18)
 	{
@@ -311,5 +352,6 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 
   *pic = targa_rgba;
 
-  ri.FS_FreeFile (buffer.v);
+  if (should_free)
+    ri.FS_FreeFile (buffer.v);
 }
