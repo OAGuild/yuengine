@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define TR_COMMON_H
 
 #include "../qcommon/q_shared.h"
+#include "../qcommon/qcommon.h"
 #include "../renderercommon/tr_public.h"
 #include "qgl.h"
 
@@ -84,6 +85,11 @@ extern float     displayAspect;
 //
 // cvars
 //
+
+#ifdef INTERNAL_FONT
+extern cvar_t *r_useInternalFont;		// use internal font built-into executable
+#endif // defined INTERNAL_FONT
+
 extern cvar_t *r_stencilbits;			// number of desired stencil bits
 extern cvar_t *r_depthbits;			// number of desired depth bits
 extern cvar_t *r_colorbits;			// number of desired color bits, only relevant for fullscreen

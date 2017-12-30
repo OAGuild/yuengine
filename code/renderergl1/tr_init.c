@@ -62,6 +62,10 @@ cvar_t	*r_skipBackEnd;
 cvar_t	*r_stereoEnabled;
 cvar_t	*r_anaglyphMode;
 
+#ifdef INTERNAL_FONT
+cvar_t	*r_useInternalFont;
+#endif // defined INTERNAL_FONT
+
 cvar_t	*r_greyscale;
 
 cvar_t	*r_ignorehwgamma;
@@ -1101,6 +1105,10 @@ void R_Register( void )
 	r_directedScale = ri.Cvar_Get( "r_directedScale", "1", CVAR_CHEAT );
 
 	r_anaglyphMode = ri.Cvar_Get("r_anaglyphMode", "0", CVAR_ARCHIVE);
+
+#ifdef INTERNAL_FONT
+	r_useInternalFont = ri.Cvar_Get("r_useInternalFont", "0", CVAR_ARCHIVE | CVAR_LATCH);
+#endif // defined INTERNAL_FONT
 
 	//
 	// temporary variables that can change at any time

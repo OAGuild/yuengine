@@ -31,7 +31,7 @@ TGA files are used for 24/32 bit images
 */
 
 typedef struct _TargaHeader {
-	unsigned char 	id_length, colormap_type, image_type;
+	unsigned char	id_length, colormap_type, image_type;
 	unsigned short	colormap_index, colormap_length;
 	unsigned char	colormap_size;
 	unsigned short	x_origin, y_origin, width, height;
@@ -41,7 +41,6 @@ typedef struct _TargaHeader {
 #if YUOA_OVERRIDE_FONT
 
 qboolean shouldOverrideWithFont( const char *name ) {
-	return Q_stricmp( name, "gfx/2d/bigchars.tga" ) == 0;
 }
 
 #endif
@@ -68,28 +67,25 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	if(height)
 		*height = 0;
 
-#if YUOA_OVERRIDE_FONT
+#ifdef INTERNAL_FONT
+	/* include internal font into the compiled executable, and override the
+	 * console font with it if cvar `r_useInternalFont` is true
+	 */
 	qboolean should_free = qtrue;
 
-	if ( shouldOverrideWithFont( name ) ) {
+	if ( r_useInternalFont->integer &&
+			Q_stricmp( name, "gfx/2d/bigchars.tga" ) == 0 ) {
 		static byte bigchars_tga[] = {
-#  if YUOA_OVERRIDE_FONT == 1
-#    include "bigchars_tga16.h"
-#  elif YUOA_OVERRIDE_FONT == 2
-#    include "bigchars_tga32.h"
-#  elif YUOA_OVERRIDE_FONT == 3
-#    include "bigchars_tga64.h"
-#  else
-#    error "invalid value for YUOA_OVERRIDE_FONT"
-#  endif
+			#include "bigchars_tga.h"
 		};
 
+		//
 		// override with font in compiled executable
+		//
 		length = sizeof bigchars_tga;
 		buffer.b = bigchars_tga;
 		should_free = qfalse;
 	} else {
-
 		//
 		// load the file
 		//
@@ -97,9 +93,8 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 		if (!buffer.b || length < 0) {
 			return;
 		}
-
 	}
-#else
+#else // defined INTERNAL_FONT
 	//
 	// load the file
 	//
@@ -107,7 +102,7 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	if (!buffer.b || length < 0) {
 		return;
 	}
-#endif // YUOA_OVERRIDE_FONT
+#endif
 
 	if(length < 18)
 	{
@@ -120,7 +115,7 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	targa_header.id_length = buf_p[0];
 	targa_header.colormap_type = buf_p[1];
 	targa_header.image_type = buf_p[2];
-	
+
 	memcpy(&targa_header.colormap_index, &buf_p[3], 2);
 	memcpy(&targa_header.colormap_length, &buf_p[5], 2);
 	targa_header.colormap_size = buf_p[7];
@@ -140,9 +135,9 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 
 	buf_p += 18;
 
-	if (targa_header.image_type!=2 
+	if (targa_header.image_type!=2
 		&& targa_header.image_type!=10
-		&& targa_header.image_type != 3 ) 
+		&& targa_header.image_type != 3 )
 	{
 		ri.Error (ERR_DROP, "LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RGB) TGA images supported");
 	}
@@ -176,24 +171,24 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 
 		buf_p += targa_header.id_length;  // skip TARGA image comment
 	}
-	
+
 	if ( targa_header.image_type==2 || targa_header.image_type == 3 )
-	{ 
+	{
 		if(buf_p + columns*rows*targa_header.pixel_size/8 > end)
 		{
 			ri.Error (ERR_DROP, "LoadTGA: file truncated (%s)", name);
 		}
 
 		// Uncompressed RGB or gray scale image
-		for(row=rows-1; row>=0; row--) 
+		for(row=rows-1; row>=0; row--)
 		{
 			pixbuf = targa_rgba + row*columns*4;
-			for(column=0; column<columns; column++) 
+			for(column=0; column<columns; column++)
 			{
 				unsigned char red,green,blue,alphabyte;
-				switch (targa_header.pixel_size) 
+				switch (targa_header.pixel_size)
 				{
-					
+
 				case 8:
 					blue = *buf_p++;
 					green = blue;
@@ -260,7 +255,7 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 							ri.Error( ERR_DROP, "LoadTGA: illegal pixel_size '%d' in file '%s'", targa_header.pixel_size, name );
 							break;
 					}
-	
+
 					for(j=0;j<packetSize;j++) {
 						*pixbuf++=red;
 						*pixbuf++=green;
@@ -314,7 +309,7 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 							else
 								goto breakOut;
 							pixbuf = targa_rgba + row*columns*4;
-						}						
+						}
 					}
 				}
 			}
@@ -322,8 +317,8 @@ void R_LoadTGA ( const char *name, byte **pic, int *width, int *height)
 		}
 	}
 
-#if 0 
-  // TTimo: this is the chunk of code to ensure a behavior that meets TGA specs 
+#if 0
+  // TTimo: this is the chunk of code to ensure a behavior that meets TGA specs
   // bit 5 set => top-down
   if (targa_header.attributes & 0x20) {
     unsigned char *flip = (unsigned char*)malloc (columns*4);

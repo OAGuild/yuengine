@@ -24,6 +24,7 @@ New features implemented in Yu Engine are the following:
 - Additional keyboard editing shortcuts for editing text fields
 - `cmdmode` (like messagemodes) for quickly entering console commands
 - Improved line-editing in TTY console
+- Possible to include an internal font in the renderers
 
 Hor+ FOV
 --------
@@ -144,3 +145,16 @@ In the tty-console, the keyboard commands using ALT is accessed by prefixing the
 key with `ESC`. So `ESC-b` is eqvivalent to `ALT-b` in the in-game console.
 Most terminal emulators can be configured to make `ALT` send `ESC`-codes in this
 way.
+
+Internal font
+-------------
+
+It is possible to include an internal font when compiling the render. To do
+this you must define the Makefile variable `BUILD_INTERNAL_FONT` to a non-zero
+value when compiling the renderers. When this has been done, there is a cvar
+called `r_useInternalFont` which when set to a non-zero value will override the
+default font with the internal one. The default value for `r_useInternalFont`
+is `0`.
+
+When building the internal font, each renderer gets a copy of the font. This
+adds ~10KB of memory to each of the renderer libs.

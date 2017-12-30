@@ -11,8 +11,8 @@ ifeq ($(COMPILE_PLATFORM),sunos)
   COMPILE_ARCH=$(shell uname -p | sed -e 's/i.86/x86/')
 endif
 
-ifndef YUOA_OVERRIDE_FONT
-  YUOA_OVERRIDE_FONT=0
+ifndef BUILD_INTERNAL_FONT
+  BUILD_INTERNAL_FONT=1
 endif
 
 ifndef BUILD_STANDALONE
@@ -1067,7 +1067,10 @@ BASE_CFLAGS += -Wformat=2 -Wno-format-zero-length -Wformat-security -Wno-format-
 BASE_CFLAGS += -Wstrict-aliasing=2 -Wmissing-format-attribute
 BASE_CFLAGS += -Wdisabled-optimization
 BASE_CFLAGS += -Werror-implicit-function-declaration
-BASE_CFLAGS += -DYUOA_OVERRIDE_FONT=$(YUOA_OVERRIDE_FONT)
+
+ifeq ($(BUILD_INTERNAL_FONT),1)
+  BASE_CFLAGS += -DINTERNAL_FONT
+endif
 
 ifeq ($(V),1)
 echo_cmd=@:
