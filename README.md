@@ -149,12 +149,25 @@ way.
 Internal font
 -------------
 
-It is possible to include an internal font when compiling the render. To do
-this you must define the Makefile variable `BUILD_INTERNAL_FONT` to a non-zero
-value when compiling the renderers. When this has been done, there is a cvar
-called `r_useInternalFont` which when set to a non-zero value will override the
-default font with the internal one. The default value for `r_useInternalFont`
+The default OA font used for the console and some in-game text doesn't look
+very good.
+
+It is possible to include an custom made internal font, which looks better (in
+my opinion). This is controlled by the Makefile variable `BUILD_INTERNAL_FONT`
+(it is set to `1` by default) when building the renderer libs. When the
+renderer has been built using this option, there is a cvar called
+`r_useInternalFont` which when set to a non-zero value will override the
+default font with the internal one.  The default value for `r_useInternalFont`
 is `0`.
 
 When building the internal font, each renderer gets a copy of the font. This
-adds ~10KB of memory to each of the renderer libs.
+adds ~100KB of memory to each of the renderer libs. This isn't very much
+considering that the opengl1 renderer is over 3.5 MB without the included font.
+But if you don't want to use this feature, you can disable the build option and
+save some memory.
+
+Author
+------
+
+Yu Engine was created by My little commie <3, a.k.a. \<Guild\>Commie, a.k.a.
+Saminuorra.

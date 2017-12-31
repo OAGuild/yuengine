@@ -1,3 +1,13 @@
+/* DON'T BE SCARED! THIS IS ABSOLUTELY NOT A BINARY BLOB TO TAKE OVER YOUR
+ * COMPUTER!
+ *
+ * This is the binary data of the internal font used by yuengine when
+ * INTERNAL_FONT is defined. The data is compressed in TGA format and is
+ * uncompressed in <tr_image_tga.c> when the game starts.
+ *
+ * Each char is 16x16 pixels large. The font was created by <Guild>Commie, and
+ * is based off Deja Vu Sans Mono.
+ */
   0,   0,  10,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,   1,
  32,   8, 129,   0,   0,   0,   0,   3, 227, 227, 227,  98,  45,  45,  45, 194,
   0,   0,   0, 171,   0,   0,   0,  18, 147,   0,   0,   0,   0,   4, 255, 255,
@@ -6719,4 +6729,4 @@
 255, 255, 255,  65, 255, 255, 255,  45, 255, 255, 255,  27, 255, 255, 255,  21,
 255, 255, 255,  10, 129, 255, 255, 255,   3,   0, 255, 255, 255,   1, 224,   0,
   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  84,  82,  85,  69,  86,
- 73,  83,  73,  79,  78,  45,  88,  70,  73,  76,  69,  46,   0,
+ 73,  83,  73,  79,  78,  45,  88,  70,  73,  76,  69,  46,   0
