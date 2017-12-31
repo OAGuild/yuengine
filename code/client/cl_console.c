@@ -643,14 +643,13 @@ void Con_DrawNotify (void)
 			SCR_DrawBigString (8, v, "say:", 1.0f, qfalse );
 			skip = 5;
 		}
-
-		Field_BigDraw( &chatField, skip * BIGCHAR_WIDTH, v,
+		Field_BigDraw( &chatField, 8 + skip * BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE && cmdmode )
 	{
 		SCR_DrawBigString (8, v, "]", 1.0f, qfalse );
-		Field_BigDraw( &g_consoleField, BIGCHAR_WIDTH, v,
+		Field_BigDraw( &g_consoleField, 8 + BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - BIGCHAR_WIDTH, qtrue, qtrue );
 	}
 
