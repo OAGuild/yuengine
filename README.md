@@ -165,9 +165,3 @@ adds ~100KB of memory to each of the renderer libs. This isn't very much
 considering that the opengl1 renderer is over 3.5 MB without the included font.
 But if you don't want to use this feature, you can disable the build option and
 save some memory.
-
-Author
-------
-
-Yu Engine was created by My little commie <3, a.k.a. \<Guild\>Commie, a.k.a.
-Saminuorra.
