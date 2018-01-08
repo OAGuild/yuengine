@@ -118,6 +118,7 @@ cvar_t	*cl_serverStatusResendTime;
 cvar_t	*cl_lanForcePackets;
 
 cvar_t	*cl_guidServerUniq;
+cvar_t	*cl_randomguid;
 
 cvar_t	*cl_consoleKeys;
 
@@ -1343,17 +1344,36 @@ update cl_guid using QKEY_FILE and optional prefix
 */
 static void CL_UpdateGUID( const char *prefix, int prefix_len )
 {
-	fileHandle_t f;
-	int len;
+	if( cl_randomguid->integer )
+	{
+		static byte random_guid[33];
+		int i;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
+		Com_RandomBytes( random_guid, sizeof random_guid - 1 ); 
+		for(i = 0; i < sizeof random_guid - 1; ++i) {
+			byte ch = random_guid[i] % 16;
+			if( ch < 10 )
+				random_guid[i] = ch + '0';
+			else
+				random_guid[i] = ch - 10 + 'A';
+		}
 
-	if( len != QKEY_SIZE ) 
-		Cvar_Set( "cl_guid", "" );
+		Cvar_Set( "cl_guid", (char *)random_guid );
+	}
 	else
-		Cvar_Set( "cl_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
-			prefix, prefix_len ) );
+	{
+		fileHandle_t f;
+		int len;
+
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
+
+		if( len != QKEY_SIZE ) 
+			Cvar_Set( "cl_guid", "" );
+		else
+			Cvar_Set( "cl_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
+				prefix, prefix_len ) );
+	}
 }
 
 static void CL_OldGame(void)
@@ -3613,6 +3633,7 @@ void CL_Init( void ) {
 	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE);
 
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
+	cl_randomguid = Cvar_Get ("cl_randomguid", "0", CVAR_ARCHIVE);
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
