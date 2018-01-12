@@ -799,9 +799,26 @@ void Console_CharEvent( int ch ) {
 		return;
 	}
 
-	// tab completes command
+	// tab completes command or switches console
 	if ( ch == '\t' ) {
-		Field_AutoComplete( &g_consoleField );
+		if ( keys[K_CTRL].down ) {
+			if ( keys[K_SHIFT].down ) {
+				Con_NextConsole(-1);
+			} else {
+				Con_NextConsole(1);
+			}
+		} else {
+			Field_AutoComplete( &g_consoleField );
+		}
+		return;
+	}
+
+	// switch console
+	if ( ch >= '0' && ch <= '9' && keys[K_ALT].down ) {
+		// console numbers start at one, last one is 10 (accessed through 0)
+		int n = ch == '0' ? 10 : ch - '1';
+
+		Con_SwitchConsole( n );
 		return;
 	}
 
