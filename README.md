@@ -222,5 +222,5 @@ converted to chat commands. So the line `Hello, world!` will become the command
 
 This is especially useful for keeping chat history through map switches, as
 all the system messages will not get displayed in the chat consoles. Similarly
-chat messages will not get displayed in the `sys` console. `condump` will dump
-the content of the active console-tab.
+chat messages will not get displayed in the `sys` console. The
+`condump`-command will dump the content of the active console-tab.
