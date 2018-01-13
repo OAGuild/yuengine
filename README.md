@@ -26,7 +26,7 @@ New features implemented in Yu Engine are the following:
 - Randomized GUID:s
 - Additional keyboard editing shortcuts for editing text fields
 - Improved line-editing in TTY console
-- Tabbed console with filtered text
+- Tabbed console with filtered messages
 
 Cvar `cl_scaleSensWithFov`
 --------------------------
@@ -188,8 +188,8 @@ key with `ESC`. So `ESC-b` is eqvivalent to `ALT-b` in the in-game console.
 Most terminal emulators can be configured to make `ALT` send `ESC`-codes in this
 way.
 
-Tabbed console with filtered text
----------------------------------
+Tabbed console with filtered messages
+-------------------------------------
 
 A very convenient feature originally implemented in L0neStarr's fx3-engine.
 
@@ -200,22 +200,27 @@ above.
 Each console has a specific purpose and their differences are summarized in the
 following table.
 
-| Number | Name  | Messages displayed | Command-type              |
-| ------ | ----- | ------------------ | ------------              |
-| 1      | all   | All messages       | Depends on `con_autochat` |
-| 2      | sys   | Non-chat messages  | Command                   |
-| 3      | chat  | All-chat messages  | `say`                     |
-| 4      | tchat | Team-chat messages | `say_team`                |
+| Number | Name    | Messages displayed | Command-type              |
+| ------ | ------- | ------------------ | ------------------------- |
+| 1      | `all`   | All messages       | Depends on `con_autochat` |
+| 2      | `sys`   | Non-chat messages  | Command                   |
+| 3      | `chat`  | All-chat messages  | `say`                     |
+| 4      | `tchat` | Team-chat messages | `say_team`                |
 
-The "all" console works just like the normal quake console. It will catch all
+The `all` console works just like the normal quake console. It will display all
 messages and is the default console opened with the console-key. If
 `con_autochat` is non-zero, lines typed in this console without a preceding
 slash will be interpreted as chat commands.
 
-In the "sys" console all lines are interpreted as commands, independent of
+In the `sys` console all lines are interpreted as commands, independent of
 `con_autochat`.
 
-In the "chat" and "tchat" consoles, all lines typed will be implicitly
-converted to chat commands. So the line `Hello, world!` will become `say Hello,
-world!` in the "chat" console or `say_team Hello, world!` in the "tchat"
-console. This is true even if the line contains a preceding slash.
+In the `chat` and `tchat` consoles, all lines typed will be implicitly
+converted to chat commands. So the line `Hello, world!` will become the command
+`say Hello, world!` in the `chat` console or `say_team Hello, world!` in the
+`tchat` console. This is true even if the line contains a preceding slash.
+
+This is especially useful for keeping chat history through map switches, as
+all the system messages will not get displayed in the chat consoles. Similarly
+chat messages will not get displayed in the `sys` console. `condump` will dump
+the content of the active console-tab.
