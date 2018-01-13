@@ -264,7 +264,8 @@ Con_CmdMode_f
 void Con_CmdMode_f (void) {
 	Field_Clear( &g_consoleField );
 	cmdmode = qtrue;
-	g_consoleField.widthInChars = 30;
+	activeCon = &con[CON_SYS]; // change to sys console
+	g_consoleField.widthInChars = 34;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
 }
 
