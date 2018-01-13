@@ -201,13 +201,13 @@ Each console has a specific purpose and their differences are summarized in the
 following table.
 
 | Number | Name  | Messages displayed | Command-type              |
-| ------ | ----- | ------------------ | ------------------------- |
-| 1	     | all   | all messages       | depends on `con_autochat` |
-| 2	     | sys   | non-chat messages  | command                   |
-| 3	     | chat  | all-chat messages  | `say`                     |
-| 4	     | tchat | team-chat messages | `say_team`                |
+| ------ | ----- | ------------------ | ------------              |
+| 1      | all   | All messages       | Depends on `con_autochat` |
+| 2      | sys   | Non-chat messages  | Command                   |
+| 3      | chat  | All-chat messages  | `say`                     |
+| 4      | tchat | Team-chat messages | `say_team`                |
 
-The all-console works just like the normal quake console. It will catch all
+The "all" console works just like the normal quake console. It will catch all
 messages and is the default console opened with the console-key. If
 `con_autochat` is non-zero, messages typed in this console without a preceding
 slash will be interpreted as chat commands.
