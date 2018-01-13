@@ -545,7 +545,6 @@ void Con_DrawCharacter (int cx, int line, int num);
 
 void Con_SwitchConsole (int n);
 void Con_NextConsole (int n);
-void Con_CheckResize (void);
 void Con_Init(void);
 void Con_Shutdown(void);
 void Con_Clear_f (void);
