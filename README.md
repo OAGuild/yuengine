@@ -26,6 +26,7 @@ New features implemented in Yu Engine are the following:
 - Randomized GUID:s
 - Additional keyboard editing shortcuts for editing text fields
 - Improved line-editing in TTY console
+- Tabbed console with filtered text
 
 Cvar `cl_scaleSensWithFov`
 --------------------------
@@ -159,6 +160,9 @@ Console specific GUI-style keyboard shortcuts:
 - `CTRL-PgDn`, scroll down one line
 - `CTRL-Home`, scroll to first line
 - `CTRL-End`, scroll to last line
+- `ALT-Left`/`SHIFT-Tab`, previous console tab
+- `ALT-Right`/`CTRL-Tab`, next console tab
+- `ALT-`*`<digit>`*, console tab number *`<digit>`*
 
 Console specific UNIX commandline-style keyboard shortcuts:
 
@@ -183,3 +187,27 @@ In the tty-console, the keyboard commands using ALT is accessed by prefixing the
 key with `ESC`. So `ESC-b` is eqvivalent to `ALT-b` in the in-game console.
 Most terminal emulators can be configured to make `ALT` send `ESC`-codes in this
 way.
+
+Tabbed console with filtered text
+---------------------------------
+
+A very convenient feature originally implemented in L0neStarr's fx3-engine.
+
+When opening the console, there are 4 tabs at the bottom (named `all`, `sys`,
+`chat`, and `tchat`). You can change console tabs using the shortcuts listen
+above.
+
+Each console has a specific purpose and their differences are summarized in the
+following table.
+
+| Number | Name  | Messages displayed | Command-type              |
+| ------ | ----- | ------------------ | ------------------------- |
+| 1	     | all   | all messages       | depends on `con_autochat` |
+| 2	     | sys   | non-chat messages  | command                   |
+| 3	     | chat  | all-chat messages  | `say`                     |
+| 4	     | tchat | team-chat messages | `say_team`                |
+
+The all-console works just like the normal quake console. It will catch all
+messages and is the default console opened with the console-key. If
+`con_autochat` is non-zero, messages typed in this console without a preceding
+slash will be interpreted as chat commands.
