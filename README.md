@@ -209,5 +209,13 @@ following table.
 
 The "all" console works just like the normal quake console. It will catch all
 messages and is the default console opened with the console-key. If
-`con_autochat` is non-zero, messages typed in this console without a preceding
+`con_autochat` is non-zero, lines typed in this console without a preceding
 slash will be interpreted as chat commands.
+
+In the "sys" console all lines are interpreted as commands, independent of
+`con_autochat`.
+
+In the "chat" and "tchat" consoles, all lines typed will be implicitly
+converted to chat commands. So the command `Hello, world!` will become `say
+Hello, world!` in the "chat" console or `say_team Hello, world!` in the "tchat"
+console. This is true even if the line contains a preceding slash.
