@@ -216,6 +216,6 @@ In the "sys" console all lines are interpreted as commands, independent of
 `con_autochat`.
 
 In the "chat" and "tchat" consoles, all lines typed will be implicitly
-converted to chat commands. So the command `Hello, world!` will become `say
-Hello, world!` in the "chat" console or `say_team Hello, world!` in the "tchat"
+converted to chat commands. So the line `Hello, world!` will become `say Hello,
+world!` in the "chat" console or `say_team Hello, world!` in the "tchat"
 console. This is true even if the line contains a preceding slash.
