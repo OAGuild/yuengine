@@ -661,60 +661,7 @@ void Console_KeyDownEvent (int key) {
 
 	// enter finishes the line
 	if ( key == K_ENTER || key == K_KP_ENTER ) {
-
-		// reset if cmdmode
-		if ( cmdmode ) {
-			Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
-			cmdmode = qfalse;
-		}
-
-		// if not in the game explicitly prepend a slash if needed
-		if ( clc.state != CA_ACTIVE && con_autochat->integer &&
-				g_consoleField.buffer[0] &&
-				g_consoleField.buffer[0] != '\\' &&
-				g_consoleField.buffer[0] != '/' ) {
-			char	temp[MAX_EDIT_LINE-1];
-
-			Q_strncpyz( temp, g_consoleField.buffer, sizeof( temp ) );
-			Com_sprintf( g_consoleField.buffer, sizeof( g_consoleField.buffer ), "\\%s", temp );
-			g_consoleField.cursor++;
-		}
-
-		Com_Printf ( "]%s\n", g_consoleField.buffer );
-
-		// leading slash is an explicit command
-		if ( g_consoleField.buffer[0] == '\\' || g_consoleField.buffer[0] == '/' ) {
-			Cbuf_AddText( g_consoleField.buffer+1 );	// valid command
-			Cbuf_AddText ("\n");
-		} else {
-			// other text will be chat messages
-			if ( !g_consoleField.buffer[0] ) {
-				return;	// empty lines just scroll the console without adding to history
-			} else {
-				if ( con_autochat->integer ) {
-					Cbuf_AddText ("cmd say ");
-				}
-
-				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText ("\n");
-			}
-		}
-
-		// copy line to history buffer
-		historyEditLines[nextHistoryLine % COMMAND_HISTORY] = g_consoleField;
-		nextHistoryLine++;
-		historyLine = nextHistoryLine;
-
-		Field_Clear( &g_consoleField );
-
-		g_consoleField.widthInChars = g_console_field_width;
-
-		CL_SaveConsoleHistory( );
-
-		if ( clc.state == CA_DISCONNECTED ) {
-			SCR_UpdateScreen ();	// force an update, because the command
-		}							// may take some time
-		return;
+		Con_AcceptLine();
 	}
 
 	// command history (ctrl-p ctrl-n for unix style)

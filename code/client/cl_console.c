@@ -87,10 +87,83 @@ cvar_t		*con_notifytime;
 
 /*
 ================
+Con_AcceptLine
+
+When the user enters a command in the console
+================
+*/
+void Con_AcceptLine( void )
+{
+	int conNum = activeCon - con;
+	qboolean isChat = conNum == CON_CHAT || conNum == CON_TCHAT;
+
+	// reset if cmdmode
+	if ( cmdmode ) {
+		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
+		cmdmode = qfalse;
+	}
+
+	// if not in the game explicitly prepend a slash if needed
+	if ( clc.state != CA_ACTIVE && con_autochat->integer &&
+			g_consoleField.buffer[0] &&
+			g_consoleField.buffer[0] != '\\' &&
+			g_consoleField.buffer[0] != '/' ) {
+		char	temp[MAX_EDIT_LINE-1];
+
+		Q_strncpyz( temp, g_consoleField.buffer, sizeof( temp ) );
+		Com_sprintf( g_consoleField.buffer, sizeof( g_consoleField.buffer ), "\\%s", temp );
+		g_consoleField.cursor++;
+	}
+
+	// don't print prompt for chat consoles
+	if (!isChat)
+		Com_Printf ( "]%s\n", g_consoleField.buffer );
+
+	// leading slash is an explicit command (for non-chat consoles)
+	if ( !isChat && (g_consoleField.buffer[0] == '\\' || g_consoleField.buffer[0] == '/') ) {
+		Cbuf_AddText( g_consoleField.buffer+1 );	// valid command
+		Cbuf_AddText ("\n");
+	} else {
+		// other text will be chat messages if in all-console with con_autochat
+		// or when in chat-console
+		if ( !g_consoleField.buffer[0] ) {
+			return;	// empty lines just scroll the console without adding to history
+		} else {
+			if ( (con_autochat->integer && conNum == CON_ALL) || conNum == CON_CHAT ) {
+				Cbuf_AddText ("cmd say ");
+			} else if ( conNum == CON_TCHAT ){
+				Cbuf_AddText ("cmd say_team ");
+			}
+
+			Cbuf_AddText( g_consoleField.buffer );
+			Cbuf_AddText ("\n");
+		}
+	}
+
+	// copy line to history buffer
+	historyEditLines[nextHistoryLine % COMMAND_HISTORY] = g_consoleField;
+	nextHistoryLine++;
+	historyLine = nextHistoryLine;
+
+	Field_Clear( &g_consoleField );
+
+	g_consoleField.widthInChars = g_console_field_width;
+
+	CL_SaveConsoleHistory( );
+
+	if ( clc.state == CA_DISCONNECTED ) {
+		SCR_UpdateScreen ();	// force an update, because the command
+	}							// may take some time
+}
+
+
+/*
+================
 Con_ToggleConsole_f
 ================
 */
-void Con_ToggleConsole_f (void) {
+void Con_ToggleConsole_f( void )
+{
 	// Can't toggle the console when it's the only thing available
 	if ( clc.state == CA_DISCONNECTED && Key_GetCatcher( ) == KEYCATCH_CONSOLE ) {
 		return;
@@ -495,6 +568,25 @@ void Con_Linefeed (console_t *con, qboolean skipnotify)
 
 /*
 ================
+================
+*/
+static void CL_InitConsoles( void ) {
+	int i;
+	for ( i = 0; i < NUM_CON; ++i ) {
+		if ( !con[i].initialized ) {
+			con[i].color[0] =
+			con[i].color[1] =
+			con[i].color[2] =
+			con[i].color[3] = 1.0f;
+			con[i].linewidth = -1;
+			Con_CheckResize( &con[i] );
+			con[i].initialized = qtrue;
+		}
+	}
+}
+
+/*
+================
 CL_ConsolePrintToCon
 
 Print text to target console
@@ -524,13 +616,7 @@ static void CL_ConsolePrintToCon( char *txt, console_t *con ) {
 	}
 
 	if (!con->initialized) {
-		con->color[0] =
-		con->color[1] =
-		con->color[2] =
-		con->color[3] = 1.0f;
-		con->linewidth = -1;
-		Con_CheckResize( con );
-		con->initialized = qtrue;
+		CL_InitConsoles();
 	}
 
 	color = ColorIndex(COLOR_WHITE);
