@@ -54,12 +54,11 @@ typedef struct {
 	vec4_t	color;
 } console_t;
 
-#define	NUM_CON 5
+#define	NUM_CON 4
 #define CON_ALL 0
 #define CON_SYS 1
 #define CON_CHAT 2
 #define CON_TCHAT 3
-#define CON_TELL 4
 
 // names for the consoles
 const char *conNames[] = {
@@ -67,7 +66,6 @@ const char *conNames[] = {
 	"sys",
 	"chat",
 	"tchat",
-	"tell"
 };
 
 // color indexes in g_color_table for consoles
@@ -75,8 +73,7 @@ const int conColors[] = {
 	1,
 	3,
 	2,
-	5,
-	6
+	5
 };
 
 console_t	con[NUM_CON];
@@ -603,9 +600,7 @@ void CL_ConsolePrint( char *txt )
 	static int lastCmdNum;
 
 	if ( cmdNum > lastCmdNum ) {
-		if ( Q_strncmp( cmdStr, "chat \"\x19", sizeof "chat \"\x19" - 1 ) == 0 ) {
-			conNum = CON_TELL;
-		} else if ( Q_strncmp( cmdStr, "chat", sizeof "chat" - 1 ) == 0 ) {
+		if ( Q_strncmp( cmdStr, "chat", sizeof "chat" - 1 ) == 0 ) {
 			conNum = CON_CHAT;
 		} else if ( Q_strncmp( cmdStr, "tchat", sizeof "tchat" - 1 ) == 0 ) {
 			conNum = CON_TCHAT;
