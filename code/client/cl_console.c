@@ -103,8 +103,10 @@ void Con_AcceptLine( void )
 		cmdmode = qfalse;
 	}
 
-	// if not in the game explicitly prepend a slash if needed
-	if ( clc.state != CA_ACTIVE && con_autochat->integer &&
+	// if in sys-console or not in the game explicitly prepend a slash if
+	// needed
+	if ( (clc.state != CA_ACTIVE || conNum == CON_SYS) &&
+			con_autochat->integer &&
 			g_consoleField.buffer[0] &&
 			g_consoleField.buffer[0] != '\\' &&
 			g_consoleField.buffer[0] != '/' ) {
@@ -115,7 +117,7 @@ void Con_AcceptLine( void )
 		g_consoleField.cursor++;
 	}
 
-	// don't print prompt for chat consoles
+	// print prompts for non-chat consoles
 	if (!isChat)
 		Com_Printf ( "]%s\n", g_consoleField.buffer );
 
@@ -264,6 +266,7 @@ Con_CmdMode_f
 void Con_CmdMode_f (void) {
 	Field_Clear( &g_consoleField );
 	cmdmode = qtrue;
+	con[CON_SYS].displayFrac = 0.0;
 	activeCon = &con[CON_SYS]; // change to sys console
 	g_consoleField.widthInChars = 34;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
