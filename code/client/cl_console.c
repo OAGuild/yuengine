@@ -501,12 +501,9 @@ Change to console number n
 ================
 */
 void Con_SwitchConsole( int n ) {
-	con[n].displayFrac = activeCon->displayFrac;
-	con[n].finalFrac = activeCon->finalFrac;
-
-	if ( n < 0 || n >= NUM_CON ) {
-		Com_Printf( "Invalid console number %i\n", n );
-	} else {
+	if ( n >= 0 && n < NUM_CON ) {
+		con[n].displayFrac = activeCon->displayFrac;
+		con[n].finalFrac = activeCon->finalFrac;
 		activeCon = &con[n];
 	}
 }
