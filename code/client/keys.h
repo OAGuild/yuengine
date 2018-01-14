@@ -44,9 +44,15 @@ extern	field_t	historyEditLines[COMMAND_HISTORY];
 extern	field_t	g_consoleField;
 extern	field_t	chatField;
 extern	int				anykeydown;
-extern	qboolean	chat_team;
-extern	qboolean	cmdmode;
-extern	int			chat_playerNum;
+
+enum {
+	CHAT_CHAT,
+	CHAT_TCHAT,
+	CHAT_TELL,
+	CHAT_CMD
+};
+extern	int			chat_type; // type of message (one of above enums)
+extern	int			chat_playerNum; // target of CHAT_TELL
 
 void Key_WriteBindings( fileHandle_t f );
 void Key_SetBinding( int keynum, const char *binding );

@@ -59,6 +59,91 @@ cvar_t		*con_notifytime;
 
 /*
 ================
+Con_HistPrev
+
+Recall older line in history to field
+================
+*/
+void Con_HistPrev( field_t *edit )
+{
+	if ( nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0 ) {
+		historyLine--;
+	}
+	*edit = historyEditLines[ historyLine % COMMAND_HISTORY ];
+}
+
+/*
+================
+Con_HistNext
+
+Recall newer line in history to field
+================
+*/
+void Con_HistNext( field_t *edit )
+{
+	int width = edit->widthInChars;
+	historyLine++;
+	if (historyLine >= nextHistoryLine) {
+		historyLine = nextHistoryLine;
+		Field_Clear( edit );
+		edit->widthInChars = width;
+		return;
+	}
+	*edit = historyEditLines[ historyLine % COMMAND_HISTORY ];
+}
+
+/*
+================
+Con_HistAdd
+
+Add line to history
+================
+*/
+void Con_HistAdd( field_t *edit )
+{
+	// copy line to history buffer
+	historyEditLines[nextHistoryLine % COMMAND_HISTORY] = *edit;
+	nextHistoryLine++;
+	historyLine = nextHistoryLine;
+}
+
+/*
+================
+Con_HistAbort
+
+Abort scrolling in the history
+================
+*/
+void Con_HistAbort( void )
+{
+	historyLine = nextHistoryLine;
+}
+
+/*
+================
+Con_PrependSlashIfNeeded
+
+Prepend slash to command in field if needed
+================
+*/
+void Con_PrependSlashIfNeeded( field_t *edit, int conType ) {
+	// if in sys-console or not in the game explicitly prepend a slash if
+	// needed
+	if ( (clc.state != CA_ACTIVE || conType == CON_SYS) &&
+			con_autochat->integer &&
+			edit->buffer[0] &&
+			edit->buffer[0] != '\\' &&
+			edit->buffer[0] != '/' ) {
+		char	temp[MAX_EDIT_LINE-1];
+
+		Q_strncpyz( temp, edit->buffer, sizeof( temp ) );
+		Com_sprintf( edit->buffer, sizeof( edit->buffer ), "\\%s", temp );
+		edit->cursor++;
+	}
+}
+
+/*
+================
 Con_AcceptLine
 
 When the user enters a command in the console
@@ -66,29 +151,10 @@ When the user enters a command in the console
 */
 void Con_AcceptLine( void )
 {
-	// for cmdmode, always use sys-console
-	int conNum = cmdmode ? CON_SYS : activeCon - con;
+	int conNum = activeCon - con;
 	qboolean isChat = CON_ISCHAT(conNum);
 
-	// reset if cmdmode
-	if ( cmdmode ) {
-		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
-		cmdmode = qfalse;
-	}
-
-	// if in sys-console or not in the game explicitly prepend a slash if
-	// needed
-	if ( (clc.state != CA_ACTIVE || conNum == CON_SYS) &&
-			con_autochat->integer &&
-			g_consoleField.buffer[0] &&
-			g_consoleField.buffer[0] != '\\' &&
-			g_consoleField.buffer[0] != '/' ) {
-		char	temp[MAX_EDIT_LINE-1];
-
-		Q_strncpyz( temp, g_consoleField.buffer, sizeof( temp ) );
-		Com_sprintf( g_consoleField.buffer, sizeof( g_consoleField.buffer ), "\\%s", temp );
-		g_consoleField.cursor++;
-	}
+	Con_PrependSlashIfNeeded( &g_consoleField, conNum );
 
 	// print prompts for non-chat consoles
 	if (!isChat)
@@ -126,11 +192,7 @@ void Con_AcceptLine( void )
 		}
 	}
 
-	// copy line to history buffer
-	historyEditLines[nextHistoryLine % COMMAND_HISTORY] = g_consoleField;
-	nextHistoryLine++;
-	historyLine = nextHistoryLine;
-
+	Con_HistAdd( &g_consoleField );
 	Field_Clear( &g_consoleField );
 
 	g_consoleField.widthInChars = g_console_field_width;
@@ -155,14 +217,9 @@ void Con_ToggleConsole_f( void )
 		return;
 	}
 
-	// if in command mode, switch to regular console
-	if ( cmdmode ) {
-		cmdmode = qfalse;
-		return;
-	}
-
 	if ( con_autoclear->integer ) {
 		Field_Clear( &g_consoleField );
+		Con_HistAbort();
 	}
 
 	g_consoleField.widthInChars = g_console_field_width;
@@ -193,7 +250,7 @@ Con_MessageMode_f
 */
 void Con_MessageMode_f (void) {
 	chat_playerNum = -1;
-	chat_team = qfalse;
+	chat_type = CHAT_CHAT;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
 
@@ -207,7 +264,7 @@ Con_MessageMode2_f
 */
 void Con_MessageMode2_f (void) {
 	chat_playerNum = -1;
-	chat_team = qtrue;
+	chat_type = CHAT_TCHAT;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 25;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -221,15 +278,18 @@ Return how many characters it takes to display an integer
 ================
 */
 int IntDisplayWidth( int i ) {
-	int n = 1;
+	int n = 0;
 
 	if (i < 0) {
 		i = -i;
-		n++;
+		++n;
 	}
 
-	while ( i /= 10 > 0 )
+	while ( i > 0 ) {
+		i /= 10;
 		++n;
+	}
+
 	return n;
 }
 
@@ -244,7 +304,7 @@ void Con_MessageMode3_f (void) {
 		chat_playerNum = -1;
 		return;
 	}
-	chat_team = qfalse;
+	chat_type = CHAT_TELL;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 28 - IntDisplayWidth( chat_playerNum );
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -261,7 +321,7 @@ void Con_MessageMode4_f (void) {
 		chat_playerNum = -1;
 		return;
 	}
-	chat_team = qfalse;
+	chat_type = CHAT_TELL;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 28 - IntDisplayWidth( chat_playerNum );
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -273,10 +333,12 @@ Con_ReplyMode_f
 ================
 */
 void Con_ReplyMode_f (void) {
-	if ( tellClientNum < 0 )
+	if ( tellClientNum < 0 ) {
+		chat_playerNum = -1;
 		return;
+	}
 	Field_Clear( &chatField );
-	chat_team = qfalse;
+	chat_type = CHAT_TELL;
 	chat_playerNum = tellClientNum;
 	chatField.widthInChars = 28 - IntDisplayWidth( chat_playerNum );
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -288,10 +350,10 @@ Con_CmdMode_f
 ================
 */
 void Con_CmdMode_f (void) {
-	Field_Clear( &g_consoleField );
-	cmdmode = qtrue;
-	g_consoleField.widthInChars = 34;
-	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
+	Field_Clear( &chatField );
+	chat_type = CHAT_CMD;
+	chatField.widthInChars = 34;
+	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
 /*
@@ -914,27 +976,25 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
-		if (chat_team) {
+		if (chat_type == CHAT_CHAT) {
+			SCR_DrawBigString (8, v, "say:", 1.0f, qfalse );
+			skip = 5;
+		} else if (chat_type == CHAT_TCHAT) {
 			SCR_DrawBigString (8, v, "say_team:", 1.0f, qfalse );
 			skip = 10;
-		} else if (chat_playerNum >= 0) {
+		} else if (chat_type == CHAT_CMD) {
+			SCR_DrawBigString (8, v, "]", 1.0f, qfalse );
+			skip = 1;
+		} else if (chat_type == CHAT_TELL) {
 			static char buf[32];
 			Com_sprintf( buf, sizeof buf, "tell %d: %n", chat_playerNum, &skip );
 			SCR_DrawBigString (8, v, buf, 1.0f, qfalse );
 		} else {
-			SCR_DrawBigString (8, v, "say:", 1.0f, qfalse );
-			skip = 5;
+			skip = 0;
 		}
 		Field_BigDraw( &chatField, 8 + skip * BIGCHAR_WIDTH, v,
 			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
 	}
-	else if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE && cmdmode )
-	{
-		SCR_DrawBigString (8, v, "]", 1.0f, qfalse );
-		Field_BigDraw( &g_consoleField, 8 + BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - BIGCHAR_WIDTH, qtrue, qtrue );
-	}
-
 }
 
 /*
@@ -1102,7 +1162,7 @@ Scroll it up or down
 */
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
-	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE && !cmdmode )
+	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
 		activeCon->finalFrac = 0.5;		// half screen
 	else
 		activeCon->finalFrac = 0;				// none visible
@@ -1157,7 +1217,6 @@ void Con_Close( void ) {
 	}
 	Con_ClearNotify ();
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
-	cmdmode = qfalse;
 	activeCon->finalFrac = 0;				// none visible
 	activeCon->displayFrac = 0;
 }

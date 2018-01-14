@@ -594,7 +594,6 @@ qboolean CL_UpdateVisiblePings_f( int source );
 //
 void Con_DrawCharacter (int cx, int line, int num);
 
-void Con_AcceptLine (void);
 void Con_SwitchConsole (int n);
 void Con_NextConsole (int n);
 void Con_Init(void);
@@ -610,6 +609,12 @@ void Con_PageDown( void );
 void Con_Top( void );
 void Con_Bottom( void );
 void Con_Close( void );
+void Con_PrependSlashIfNeeded ( field_t *edit, int conType );
+void Con_HistPrev (field_t *edit);
+void Con_HistNext (field_t *edit);
+void Con_HistAbort (void);
+void Con_HistAdd (field_t *edit);
+void Con_AcceptLine (void);
 
 void CL_LoadConsoleHistory( void );
 void CL_SaveConsoleHistory( void );

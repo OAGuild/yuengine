@@ -40,9 +40,8 @@ field_t		g_consoleField = { .undobuf = &g_consoleUndobuf, .yankbuf = &yankbuf };
 
 undobuf_t	chatUndobuf;
 field_t		chatField = { .undobuf = &chatUndobuf, .yankbuf = &yankbuf };
-qboolean	chat_team;
-qboolean	cmdmode;
 
+int			chat_type;
 int			chat_playerNum = -1;
 
 
@@ -656,12 +655,6 @@ void Console_KeyDownEvent (int key) {
 	int conNum = activeCon - con;
 	qboolean isChat = conNum == CON_CHAT || conNum == CON_TCHAT;
 
-	if (key == K_ESCAPE) {
-		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
-		cmdmode = qfalse;
-		return;
-	}
-
 	// enter finishes the line
 	if ( key == K_ENTER || key == K_KP_ENTER ) {
 		Con_AcceptLine();
@@ -673,80 +666,64 @@ void Console_KeyDownEvent (int key) {
 		if ( ( key == K_MWHEELUP && keys[K_SHIFT].down ) ||
 				( key == K_UPARROW ) || ( key == K_KP_UPARROW ) ||
 				( ( tolower(key) == 'p' ) && keys[K_CTRL].down ) ) {
-			if ( nextHistoryLine - historyLine < COMMAND_HISTORY
-					&& historyLine > 0 ) {
-				historyLine--;
-			}
-			g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
-			return;
+			Con_HistPrev( &g_consoleField );
 		}
 
 		if ( ( key == K_MWHEELDOWN && keys[K_SHIFT].down ) ||
 				( key == K_DOWNARROW ) || ( key == K_KP_DOWNARROW ) ||
 				( ( tolower(key) == 'n' ) && keys[K_CTRL].down ) ) {
-			historyLine++;
-			if (historyLine >= nextHistoryLine) {
-				historyLine = nextHistoryLine;
-				Field_Clear( &g_consoleField );
-				g_consoleField.widthInChars = g_console_field_width;
-				return;
-			}
-			g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
-			return;
+			Con_HistNext( &g_consoleField );
 		}
 	}
 	
-	// console scroll only if not using cmdmode
-	if ( !cmdmode ) {
-		// console tab switching
-		if ( key == K_LEFTARROW && keys[K_ALT].down ) {
-			Con_NextConsole( -1 );
-			return;
-		} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
-			Con_NextConsole( 1 );
-			return;
-		}
+	// console tab switching
+	if ( key == K_LEFTARROW && keys[K_ALT].down ) {
+		Con_NextConsole( -1 );
+		return;
+	} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
+		Con_NextConsole( 1 );
+		return;
+	}
 
-		// console scrolling
-		if ( key == K_PGUP ) {
+	// console scrolling
+	if ( key == K_PGUP ) {
+		Con_PageUp();
+		return;
+	}
+
+	if ( key == K_PGDN) {
+		Con_PageDown();
+		return;
+	}
+
+	if ( key == K_MWHEELUP) {
+		Con_PageUp();
+		if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
 			Con_PageUp();
-			return;
-		}
-
-		if ( key == K_PGDN) {
-			Con_PageDown();
-			return;
-		}
-
-		if ( key == K_MWHEELUP) {
 			Con_PageUp();
-			if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
-				Con_PageUp();
-				Con_PageUp();
-			}
-			return;
 		}
+		return;
+	}
 
-		if ( key == K_MWHEELDOWN) {
+	if ( key == K_MWHEELDOWN) {
+		Con_PageDown();
+		if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
 			Con_PageDown();
-			if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
-				Con_PageDown();
-				Con_PageDown();
-			}
-			return;
+			Con_PageDown();
 		}
+		return;
+	}
 
-		// ctrl-home = top of console
-		if ( key == K_HOME && keys[K_CTRL].down ) {
-			Con_Top();
-			return;
-		}
+	// ctrl-home = top of console
+	if ( key == K_HOME && keys[K_CTRL].down ) {
+		Con_Top();
+		return;
+	}
 
-		// ctrl-end = bottom of console
-		if ( key == K_END && keys[K_CTRL].down ) {
-			Con_Bottom();
-			return;
-		}
+	// ctrl-end = bottom of console
+	if ( key == K_END && keys[K_CTRL].down ) {
+		Con_Bottom();
+		return;
 	}
 
 	// pass to the normal editline routine
@@ -825,6 +802,11 @@ void Message_Key( int key ) {
 
 	if (key == K_ESCAPE) {
 		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_MESSAGE );
+
+		// reset history scroll if cmdmode was active
+		if (chat_type == CHAT_CMD )
+			Con_HistAbort();
+
 		Field_Clear( &chatField );
 		return;
 	}
@@ -832,21 +814,58 @@ void Message_Key( int key ) {
 	if ( key == K_ENTER || key == K_KP_ENTER )
 	{
 		if ( chatField.buffer[0] && clc.state == CA_ACTIVE ) {
-			if (chat_playerNum != -1 )
-				Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer );
-			else if (chat_team)
+			if (chat_type == CHAT_TELL ) {
+				if (chat_playerNum >= 0) {
+					Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n",
+							chat_playerNum, chatField.buffer );
+				}
+			} else if (chat_type == CHAT_TCHAT) {
 				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer );
-			else
+			} else if (chat_type == CHAT_CMD) {
+				Con_PrependSlashIfNeeded( &chatField, CON_SYS );
+				Con_HistAdd( &chatField );
+
+				if ( chatField.buffer[0] == '\\' || chatField.buffer[0] == '/' )
+					Cbuf_AddText( chatField.buffer + 1);
+				else
+					Cbuf_AddText( chatField.buffer );
+
+				Cbuf_AddText( "\n" );
+				goto reset_field;
+			} else {
 				Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", chatField.buffer );
+			}
 
 			CL_AddReliableCommand(buffer, qfalse);
 		}
+reset_field:
 		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_MESSAGE );
 		Field_Clear( &chatField );
 		return;
 	}
 
+	// command history scrolling for cmdmode
+	if ( chat_type == CHAT_CMD ) {
+		if ( ( key == K_MWHEELUP && keys[K_SHIFT].down ) ||
+				( key == K_UPARROW ) || ( key == K_KP_UPARROW ) ||
+				( ( tolower(key) == 'p' ) && keys[K_CTRL].down ) ) {
+			Con_HistPrev( &chatField );
+		}
+
+		if ( ( key == K_MWHEELDOWN && keys[K_SHIFT].down ) ||
+				( key == K_DOWNARROW ) || ( key == K_KP_DOWNARROW ) ||
+				( ( tolower(key) == 'n' ) && keys[K_CTRL].down ) ) {
+			Con_HistNext( &chatField );
+		}
+	}
+
 	Field_KeyDownEvent( &chatField, key );
+}
+
+void Message_Char( int ch ) {
+	if ( chat_type == CHAT_CMD && ch == '\t' )
+		Field_AutoComplete( &chatField );
+	Field_CharEvent( &chatField, ch );
 }
 
 //============================================================================
@@ -1469,7 +1488,7 @@ void CL_CharEvent( int key ) {
 	}
 	else if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE ) 
 	{
-		Field_CharEvent( &chatField, key );
+		Message_Char( key );
 	}
 	else if ( clc.state == CA_DISCONNECTED )
 	{
