@@ -77,11 +77,15 @@ typedef struct {
 	vec4_t	color;
 } console_t;
 
-#define	NUM_CON 4
+#define	NUM_CON 5
 #define CON_ALL 0
 #define CON_SYS 1
 #define CON_CHAT 2
 #define CON_TCHAT 3
+#define CON_TELL 4
+
+// check if this is a chat console
+#define CON_ISCHAT(conNum) (conNum >= CON_CHAT)
 
 extern console_t	con[NUM_CON];
 extern console_t	*activeCon;

@@ -27,20 +27,26 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 int g_console_field_width = 78;
 
 // names for the consoles
-const char *conNames[] = {
+const char *conNames[NUM_CON] = {
 	"all",
 	"sys",
 	"chat",
 	"tchat",
+	"tell"
 };
 
 // color indexes in g_color_table for consoles
-const int conColors[] = {
+const int conColors[NUM_CON] = {
 	1,
 	3,
 	2,
-	5
+	5,
+	6
 };
+
+// clientNum of the last client who send private message, or -1 if not
+// available
+int		tellClientNum = -1;
 
 console_t	con[NUM_CON];
 console_t	*activeCon = con;
@@ -62,8 +68,7 @@ void Con_AcceptLine( void )
 {
 	// for cmdmode, always use sys-console
 	int conNum = cmdmode ? CON_SYS : activeCon - con;
-
-	qboolean isChat = conNum == CON_CHAT || conNum == CON_TCHAT;
+	qboolean isChat = CON_ISCHAT(conNum);
 
 	// reset if cmdmode
 	if ( cmdmode ) {
@@ -100,16 +105,23 @@ void Con_AcceptLine( void )
 			return;	// empty lines just scroll the console without adding to history
 		} else {
 			if ( (con_autochat->integer && conNum == CON_ALL) || conNum == CON_CHAT ) {
-				Cbuf_AddText ("cmd say \"");
+				Cbuf_AddText( "cmd say \"" );
 				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText ("\"");
-			} else if ( conNum == CON_TCHAT ){
-				Cbuf_AddText ("cmd say_team \"");
+				Cbuf_AddText( "\"" );
+			} else if ( conNum == CON_TCHAT ) {
+				Cbuf_AddText( "cmd say_team \"" );
 				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText ("\"");
+				Cbuf_AddText( "\"" );
+			} else if ( conNum == CON_TELL ) {
+				if ( tellClientNum >= 0 ) {
+					char cmd[MAX_EDIT_LINE + 16 ];
+					Com_sprintf( cmd, sizeof cmd, "cmd tell %d \"%s\"\n",
+							tellClientNum, g_consoleField.buffer);
+					Cbuf_AddText( cmd );
+				}
 			} else {
 				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText ("\n");
+				Cbuf_AddText( "\n" );
 			}
 		}
 	}
@@ -547,6 +559,9 @@ void Con_Linefeed (console_t *con, qboolean skipnotify)
 
 /*
 ================
+CL_InitConsoles
+
+Initialize the consoles
 ================
 */
 static void CL_InitConsoles( void ) {
@@ -566,6 +581,39 @@ static void CL_InitConsoles( void ) {
 
 /*
 ================
+CL_PlayerNameToClientNum
+
+Convert player name to client num
+
+Returns client num if there is an unique player with name, -1 if no player has
+that name, -2 if more than one player has that name
+================
+*/
+static int CL_PlayerNameToClientNum( const char *name, int n ) {
+	const char *info = cl.gameState.stringData +
+		cl.gameState.stringOffsets[CS_SERVERINFO];
+	int count = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
+	char cleanName[MAX_NAME_LENGTH];
+
+	int i;
+	int clientNum = -1;
+	for( i = 0; i < count; i++ ) {
+
+		info = cl.gameState.stringData + cl.gameState.stringOffsets[CS_PLAYERS+i];
+		Q_strncpyz( cleanName, Info_ValueForKey( info, "n" ), sizeof(cleanName) );
+		Q_CleanStr( cleanName );
+
+		if ( Q_strncmp( cleanName, name, n ) == 0 ) {
+			if (clientNum >= 0)
+				return -2; // more than 1 player with the name
+			clientNum = i;
+		}
+	}
+	return clientNum;
+}
+
+/*
+================
 CL_ConsolePrintToCon
 
 Print text to target console
@@ -575,7 +623,7 @@ All console printing must go through this in order to be logged to disk
 If no console is visible, the text will appear at the top of the game window
 ================
 */
-static void CL_ConsolePrintToCon( char *txt, console_t *con ) {
+static void CL_ConsolePrintToCon( const char *txt, console_t *con ) {
 	int		y, l;
 	unsigned char	c;
 	unsigned short	color;
@@ -659,15 +707,35 @@ static void CL_ConsolePrintToCon( char *txt, console_t *con ) {
 
 void CL_ConsolePrint( char *txt )
 {
+	static int lastCmdNum;
 	int cmdNum = clc.lastExecutedServerCommand;
 	char *cmdStr = clc.serverCommands[cmdNum % MAX_RELIABLE_COMMANDS];
 	int conNum = CON_SYS;
-	static int lastCmdNum;
 
 	if ( cmdNum > lastCmdNum ) {
-		if ( Q_strncmp( cmdStr, "chat", sizeof "chat" - 1 ) == 0 ) {
+		if ( Q_strncmp( cmdStr, "chat \"\x19[", 8 ) == 0 ) {
+			int i;
+
+			// seek to the end of player-name (magic byte '\x19')
+			for ( i = 8 ; cmdStr[i] != '\0'; ++i ) {
+				if ( cmdStr[i] == '\x19' )
+					break;
+			}
+
+			// Name starts 8 characters after command string.
+			//
+			// Before the magic byte comes the string "^7" which we
+			// don't want to compare with, so subtract 2 to the
+			// length of the string.
+			//
+			// Then we are left with the player name string which
+			// we can use to find the client number of the sender.
+			tellClientNum = CL_PlayerNameToClientNum( cmdStr+8, i-8-2 );
+
+			conNum = CON_TELL;
+		} else if ( Q_strncmp( cmdStr, "chat", 4 ) == 0 ) {
 			conNum = CON_CHAT;
-		} else if ( Q_strncmp( cmdStr, "tchat", sizeof "tchat" - 1 ) == 0 ) {
+		} else if ( Q_strncmp( cmdStr, "tchat", 5 ) == 0 ) {
 			conNum = CON_TCHAT;
 		}
 	}
@@ -675,6 +743,13 @@ void CL_ConsolePrint( char *txt )
 
 	CL_ConsolePrintToCon( txt, &con[CON_ALL] );
 	CL_ConsolePrintToCon( txt, &con[conNum] );
+
+	// alert user if a message comes from non-unique playername
+	if (conNum == CON_TELL && tellClientNum == -2 ) {
+		const char *msg = "^3Non-unique sender name: Reply has been disabled\n";
+		CL_ConsolePrintToCon( msg, &con[CON_ALL] );
+		CL_ConsolePrintToCon( msg, &con[CON_TELL] );
+	}
 }
 
 
