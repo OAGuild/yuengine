@@ -44,6 +44,54 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
+/*
+==============================================================================
+Console
+==============================================================================
+*/
+
+#define	NUM_CON_TIMES 4
+
+#define		CON_TEXTSIZE	32768
+
+typedef struct {
+	qboolean	initialized;
+
+	short	text[CON_TEXTSIZE];
+	int		current;		// line where next message will be printed
+	int		x;				// offset in current line for next print
+	int		display;		// bottom of console displays this line
+
+	int		linewidth;		// characters across screen
+	int		totallines;		// total lines in console scrollback
+
+	float	xadjust;		// for wide aspect screens
+
+	float	displayFrac;	// aproaches finalFrac at scr_conspeed
+	float	finalFrac;		// 0.0 to 1.0 lines of console to display
+
+	int		vislines;		// in scanlines
+
+	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
+								// for transparent notify lines
+	vec4_t	color;
+} console_t;
+
+#define	NUM_CON 4
+#define CON_ALL 0
+#define CON_SYS 1
+#define CON_CHAT 2
+#define CON_TCHAT 3
+
+extern console_t	con[NUM_CON];
+extern console_t	*activeCon;
+
+/*
+==============================================================================
+Snapshot
+==============================================================================
+*/
+
 // snapshots are a view of the server at a given time
 typedef struct {
 	qboolean		valid;			// cleared if delta parsing was invalid
@@ -65,7 +113,6 @@ typedef struct {
 	int				serverCommandNum;		// execute all commands up to this before
 											// making the snapshot current
 } clSnapshot_t;
-
 
 
 /*

@@ -653,6 +653,9 @@ Handles history and console scrollback
 ====================
 */
 void Console_KeyDownEvent (int key) {
+	int conNum = activeCon - con;
+	qboolean isChat = conNum == CON_CHAT || conNum == CON_TCHAT;
+
 	if (key == K_ESCAPE) {
 		Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_CONSOLE );
 		cmdmode = qfalse;
@@ -662,81 +665,88 @@ void Console_KeyDownEvent (int key) {
 	// enter finishes the line
 	if ( key == K_ENTER || key == K_KP_ENTER ) {
 		Con_AcceptLine();
-	}
-
-	// command history (ctrl-p ctrl-n for unix style)
-
-	if ( (key == K_MWHEELUP && keys[K_SHIFT].down) || ( key == K_UPARROW ) || ( key == K_KP_UPARROW ) ||
-		 ( ( tolower(key) == 'p' ) && keys[K_CTRL].down ) ) {
-		if ( nextHistoryLine - historyLine < COMMAND_HISTORY 
-			&& historyLine > 0 ) {
-			historyLine--;
-		}
-		g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
 		return;
 	}
 
-	if ( (key == K_MWHEELDOWN && keys[K_SHIFT].down) || ( key == K_DOWNARROW ) || ( key == K_KP_DOWNARROW ) ||
-		 ( ( tolower(key) == 'n' ) && keys[K_CTRL].down ) ) {
-		historyLine++;
-		if (historyLine >= nextHistoryLine) {
-			historyLine = nextHistoryLine;
-			Field_Clear( &g_consoleField );
-			g_consoleField.widthInChars = g_console_field_width;
+	// command history (for non-chat consoles)
+	if (!isChat) {
+		if ( ( key == K_MWHEELUP && keys[K_SHIFT].down ) ||
+				( key == K_UPARROW ) || ( key == K_KP_UPARROW ) ||
+				( ( tolower(key) == 'p' ) && keys[K_CTRL].down ) ) {
+			if ( nextHistoryLine - historyLine < COMMAND_HISTORY
+					&& historyLine > 0 ) {
+				historyLine--;
+			}
+			g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
 			return;
 		}
-		g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
-		return;
-	}
 
-	// console tab switching
-	if ( key == K_LEFTARROW && keys[K_ALT].down ) {
-		Con_NextConsole( -1 );
-		return;
-	} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
-		Con_NextConsole( 1 );
-		return;
-	}
-
-	// console scrolling
-	if ( key == K_PGUP ) {
-		Con_PageUp();
-		return;
-	}
-
-	if ( key == K_PGDN) {
-		Con_PageDown();
-		return;
-	}
-
-	if ( key == K_MWHEELUP) {	//----(SA)	added some mousewheel functionality to the console
-		Con_PageUp();
-		if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
-			Con_PageUp();
-			Con_PageUp();
+		if ( ( key == K_MWHEELDOWN && keys[K_SHIFT].down ) ||
+				( key == K_DOWNARROW ) || ( key == K_KP_DOWNARROW ) ||
+				( ( tolower(key) == 'n' ) && keys[K_CTRL].down ) ) {
+			historyLine++;
+			if (historyLine >= nextHistoryLine) {
+				historyLine = nextHistoryLine;
+				Field_Clear( &g_consoleField );
+				g_consoleField.widthInChars = g_console_field_width;
+				return;
+			}
+			g_consoleField = historyEditLines[ historyLine % COMMAND_HISTORY ];
+			return;
 		}
-		return;
 	}
-
-	if ( key == K_MWHEELDOWN) {	//----(SA)	added some mousewheel functionality to the console
-		Con_PageDown();
-		if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
-			Con_PageDown();
-			Con_PageDown();
+	
+	// console scroll only if not using cmdmode
+	if ( !cmdmode ) {
+		// console tab switching
+		if ( key == K_LEFTARROW && keys[K_ALT].down ) {
+			Con_NextConsole( -1 );
+			return;
+		} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
+			Con_NextConsole( 1 );
+			return;
 		}
-		return;
-	}
 
-	// ctrl-home = top of console
-	if ( key == K_HOME && keys[K_CTRL].down ) {
-		Con_Top();
-		return;
-	}
+		// console scrolling
+		if ( key == K_PGUP ) {
+			Con_PageUp();
+			return;
+		}
 
-	// ctrl-end = bottom of console
-	if ( key == K_END && keys[K_CTRL].down ) {
-		Con_Bottom();
-		return;
+		if ( key == K_PGDN) {
+			Con_PageDown();
+			return;
+		}
+
+		if ( key == K_MWHEELUP) {
+			Con_PageUp();
+			if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
+				Con_PageUp();
+				Con_PageUp();
+			}
+			return;
+		}
+
+		if ( key == K_MWHEELDOWN) {
+			Con_PageDown();
+			if(keys[K_CTRL].down) {	// hold <ctrl> to accelerate scrolling
+				Con_PageDown();
+				Con_PageDown();
+			}
+			return;
+		}
+
+		// ctrl-home = top of console
+		if ( key == K_HOME && keys[K_CTRL].down ) {
+			Con_Top();
+			return;
+		}
+
+		// ctrl-end = bottom of console
+		if ( key == K_END && keys[K_CTRL].down ) {
+			Con_Bottom();
+			return;
+		}
 	}
 
 	// pass to the normal editline routine
@@ -776,7 +786,11 @@ void Console_CharEvent( int ch ) {
 		} else if ( keys[K_CTRL].down ) {
 			Con_NextConsole(1);
 		} else {
-			Field_AutoComplete( &g_consoleField );
+			int conNum = activeCon - con;
+
+			// autocomplete only for non-chat consoles
+			if ( conNum != CON_CHAT && conNum != CON_TCHAT )
+				Field_AutoComplete( &g_consoleField );
 		}
 		return;
 	}
