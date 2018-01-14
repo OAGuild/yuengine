@@ -184,7 +184,7 @@ that are available in the in-game console. The commands not available are
 clearing.
 
 In the tty-console, the keyboard commands using ALT is accessed by prefixing the
-key with `ESC`. So `ESC-b` is eqvivalent to `ALT-b` in the in-game console.
+key with `ESC`. So `ESC-b` is equivalent to `ALT-b` in the in-game console.
 Most terminal emulators can be configured to make `ALT` send `ESC`-codes in this
 way.
 
@@ -206,6 +206,7 @@ following table.
 | 2      | `sys`   | Non-chat messages  | Command                   |
 | 3      | `chat`  | All-chat messages  | `say`                     |
 | 4      | `tchat` | Team-chat messages | `say_team`                |
+| 5      | `tell`  | Private messages   | Reply to message          |
 
 The `all` console works just like the normal quake console. It will display all
 messages and is the default console opened with the console-key. If
@@ -216,9 +217,14 @@ In the `sys` console all lines are interpreted as commands, independent of
 `con_autochat`.
 
 In the `chat` and `tchat` consoles, all lines typed will be implicitly
-converted to chat commands. So the line `Hello, world!` will become the command
-`say Hello, world!` in the `chat` console or `say_team Hello, world!` in the
-`tchat` console. This is true even if the line contains a preceding slash.
+interpreted as chat commands. So the line `Hello, world!` will become the
+command `say Hello, world!` in the `chat` console or `say_team Hello, world!`
+in the `tchat` console. This is true even if the line contains a preceding
+slash.
+
+In the `tell` console, lines will be implicitly converted to a command to reply
+to the last received message. This is disabled when there is more than one
+player with the name of the sender.
 
 This is especially useful for keeping chat history through map switches, as
 all the system messages will not get displayed in the chat consoles. Similarly
