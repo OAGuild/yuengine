@@ -215,6 +215,26 @@ void Con_MessageMode2_f (void) {
 
 /*
 ================
+IntDisplayWidth
+
+Return how many characters it takes to display an integer
+================
+*/
+int IntDisplayWidth( int i ) {
+	int n = 1;
+
+	if (i < 0) {
+		i = -i;
+		n++;
+	}
+
+	while ( i /= 10 > 0 )
+		++n;
+	return n;
+}
+
+/*
+================
 Con_MessageMode3_f
 ================
 */
@@ -226,7 +246,7 @@ void Con_MessageMode3_f (void) {
 	}
 	chat_team = qfalse;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 30;
+	chatField.widthInChars = 28 - IntDisplayWidth( chat_playerNum );
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
@@ -243,7 +263,22 @@ void Con_MessageMode4_f (void) {
 	}
 	chat_team = qfalse;
 	Field_Clear( &chatField );
-	chatField.widthInChars = 30;
+	chatField.widthInChars = 28 - IntDisplayWidth( chat_playerNum );
+	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
+}
+
+/*
+================
+Con_ReplyMode_f
+================
+*/
+void Con_ReplyMode_f (void) {
+	if ( tellClientNum < 0 )
+		return;
+	Field_Clear( &chatField );
+	chat_team = qfalse;
+	chat_playerNum = tellClientNum;
+	chatField.widthInChars = 28 - IntDisplayWidth( chat_playerNum );
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
 }
 
@@ -257,6 +292,29 @@ void Con_CmdMode_f (void) {
 	cmdmode = qtrue;
 	g_consoleField.widthInChars = 34;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
+}
+
+/*
+================
+Con_Reply_f
+================
+*/
+void Con_Reply_f (void) {
+	char	buf[MAX_STRING_CHARS];
+
+	if ( Cmd_Argc() < 2 ) {
+		Com_Printf( "Usage: reply <message>\n" );
+		return;
+	}
+
+	if ( tellClientNum < 0 ) {
+		Com_Printf( "Nobody to reply to!\n" );
+		return;
+	}
+
+	Com_sprintf( buf, sizeof buf, "tell %i \"%s\"\n", tellClientNum, Cmd_Args() );
+
+	CL_AddReliableCommand( buf, qfalse );
 }
 
 /*
@@ -507,7 +565,9 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
 	Cmd_AddCommand ("messagemode3", Con_MessageMode3_f);
 	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
+	Cmd_AddCommand ("replymode", Con_ReplyMode_f);
 	Cmd_AddCommand ("cmdmode", Con_CmdMode_f);
+	Cmd_AddCommand ("reply", Con_Reply_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
@@ -526,7 +586,9 @@ void Con_Shutdown(void)
 	Cmd_RemoveCommand("messagemode2");
 	Cmd_RemoveCommand("messagemode3");
 	Cmd_RemoveCommand("messagemode4");
+	Cmd_RemoveCommand("replymode");
 	Cmd_RemoveCommand("cmdmode");
+	Cmd_RemoveCommand("reply");
 	Cmd_RemoveCommand("clear");
 	Cmd_RemoveCommand("condump");
 }
@@ -846,13 +908,14 @@ void Con_DrawNotify (void)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
-		if (chat_team)
-		{
+		if (chat_team) {
 			SCR_DrawBigString (8, v, "say_team:", 1.0f, qfalse );
 			skip = 10;
-		}
-		else
-		{
+		} else if (chat_playerNum >= 0) {
+			static char buf[32];
+			Com_sprintf( buf, sizeof buf, "tell %d: %n", chat_playerNum, &skip );
+			SCR_DrawBigString (8, v, buf, 1.0f, qfalse );
+		} else {
 			SCR_DrawBigString (8, v, "say:", 1.0f, qfalse );
 			skip = 5;
 		}

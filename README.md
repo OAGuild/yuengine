@@ -80,13 +80,29 @@ GUID will be generated before each connection to a server. Note this is not
 enough to be completely anonymous, playing behind a VPN or proxy server is also
 required.
 
+Command `reply`
+-----------------
+
+Used to quickly reply to a received private message. Works like `tell` but the
+target client is the client who send the last private message to your client.
+Reply does not work if the name of the target client isn't unique (to avoid
+confusion caused from impersonation).
+
+Command `replymode`
+-----------------
+
+Works like `messagemode1` or `messagemode2`. When this command is entered a
+`reply: `-prompt shows up in the top left. Then the user can enter some text
+that will be sent to the client who sent the last private message to your
+client.
+
 Command `cmdmode`
 -----------------
 
-Works like `messagemode1` or `messagemode2`. When command is entered a
-`]`-prompt shows up in the top left. Then the user can type a command that will
-be executed when `Enter` is pressed. When in this mode the user has access to
-all editing commands that are available in the normal console.
+Works like `messagemode1` or `messagemode2`. When this command is entered a
+`]`-prompt shows up in the top left. Then the user can enter a command that
+will be executed when `Enter` is pressed. When in this mode the user has access
+to all editing commands that are available in the normal console.
 
 Hor+ FOV
 --------
@@ -226,7 +242,7 @@ In the `tell` console, lines will be implicitly converted to a command to reply
 to the last received message. This is disabled when there is more than one
 player with the name of the sender.
 
-This is especially useful for keeping chat history through map switches, as
-all the system messages will not get displayed in the chat consoles. Similarly
-chat messages will not get displayed in the `sys` console. The
-`condump`-command will dump the content of the active console-tab.
+The console filtering is especially useful for keeping chat history through map
+switches, as all the system messages will not get displayed in the chat
+consoles. Similarly chat messages will not get displayed in the `sys` console.
+The `condump`-command will dump the content of the active console-tab.
