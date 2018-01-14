@@ -160,9 +160,9 @@ Console specific GUI-style keyboard shortcuts:
 - `CTRL-PgDn`, scroll down one line
 - `CTRL-Home`, scroll to first line
 - `CTRL-End`, scroll to last line
-- `ALT-Left`/`SHIFT-Tab`, previous console tab
-- `ALT-Right`/`CTRL-Tab`, next console tab
-- `ALT-`*`<digit>`*, console tab number *`<digit>`*
+- `ALT-P`/`ALT-Left`/`SHIFT-Tab`, previous console tab
+- `ALT-N`/`ALT-Right`/`CTRL-Tab`, next console tab
+- `ALT-`*`Digit`*, console tab number *`Digit`*
 
 Console specific UNIX commandline-style keyboard shortcuts:
 

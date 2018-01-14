@@ -413,7 +413,7 @@ be negative in which case it will switch backwards
 ================
 */
 void Con_NextConsole( int n ) {
-	Con_SwitchConsole( (activeCon - con + n) % NUM_CON );
+	Con_SwitchConsole( (NUM_CON + activeCon - con + n) % NUM_CON );
 }
 
 

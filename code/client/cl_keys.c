@@ -689,6 +689,13 @@ void Console_KeyDownEvent (int key) {
 		return;
 	}
 
+	// console tab switching
+	if ( key == K_LEFTARROW && keys[K_ALT].down ) {
+		Con_NextConsole( -1 );
+	} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
+		Con_NextConsole( 1 );
+	}
+
 	// console scrolling
 	if ( key == K_PGUP ) {
 		Con_PageUp();
@@ -746,14 +753,26 @@ void Console_CharEvent( int ch ) {
 		return;
 	}
 
+	// alt-n, alt-p switches console
+	if ( keys[K_ALT].down ) {
+		switch ( ch ) {
+		case 'p':
+		case 'P':
+			Con_NextConsole( -1 );
+			return;
+		case 'n':
+		case 'N':
+			Con_NextConsole( 1 );
+			return;
+		}
+	}
+
 	// tab completes command or switches console
 	if ( ch == '\t' ) {
-		if ( keys[K_CTRL].down ) {
-			if ( keys[K_SHIFT].down ) {
-				Con_NextConsole(-1);
-			} else {
-				Con_NextConsole(1);
-			}
+		if ( keys[K_SHIFT].down ) {
+			Con_NextConsole(-1);
+		} else if ( keys[K_CTRL].down ) {
+			Con_NextConsole(1);
 		} else {
 			Field_AutoComplete( &g_consoleField );
 		}
