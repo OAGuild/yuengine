@@ -722,7 +722,6 @@ static int CL_PlayerNameToClientNum( const char *name, int n ) {
 
 		info = cl.gameState.stringData + cl.gameState.stringOffsets[CS_PLAYERS+i];
 		Q_strncpyz( cleanName, Info_ValueForKey( info, "n" ), sizeof(cleanName) );
-		Q_CleanStr( cleanName );
 
 		if ( Q_strncmp( cleanName, name, n ) == 0 ) {
 			if (clientNum >= 0)
