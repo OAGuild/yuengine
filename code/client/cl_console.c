@@ -792,7 +792,13 @@ void CL_ConsolePrint( char *txt )
 			//
 			// Then we are left with the player name string which
 			// we can use to find the client number of the sender.
-			tellClientNum = CL_PlayerNameToClientNum( cmdStr+8, i-8-2 );
+			int clientNum = CL_PlayerNameToClientNum( cmdStr+8, i-8-2 );
+
+			// don't override the reply player if this messages comes from this
+			// client
+			if ( clientNum != clc.clientNum ) {
+				tellClientNum = clientNum;
+			}
 
 			conNum = CON_TELL;
 		} else if ( Q_strncmp( cmdStr, "chat", 4 ) == 0 ) {
