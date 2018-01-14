@@ -132,13 +132,17 @@ void Con_AcceptLine( void )
 			return;	// empty lines just scroll the console without adding to history
 		} else {
 			if ( (con_autochat->integer && conNum == CON_ALL) || conNum == CON_CHAT ) {
-				Cbuf_AddText ("cmd say ");
+				Cbuf_AddText ("cmd say \"");
+				Cbuf_AddText( g_consoleField.buffer );
+				Cbuf_AddText ("\"");
 			} else if ( conNum == CON_TCHAT ){
-				Cbuf_AddText ("cmd say_team ");
+				Cbuf_AddText ("cmd say_team \"");
+				Cbuf_AddText( g_consoleField.buffer );
+				Cbuf_AddText ("\"");
+			} else {
+				Cbuf_AddText( g_consoleField.buffer );
+				Cbuf_AddText ("\n");
 			}
-
-			Cbuf_AddText( g_consoleField.buffer );
-			Cbuf_AddText ("\n");
 		}
 	}
 
@@ -965,6 +969,11 @@ void Con_DrawConsole( void ) {
 	if ( activeCon->displayFrac ) {
 		Con_DrawSolidConsole( activeCon->displayFrac );
 	} else {
+		// change to all-console otherwise some messages might not get
+		// printed
+		con[CON_ALL].displayFrac = 0.0;
+		activeCon = &con[CON_ALL];
+
 		// draw notify lines
 		if ( clc.state == CA_ACTIVE ) {
 			Con_DrawNotify ();

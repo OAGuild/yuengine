@@ -692,8 +692,10 @@ void Console_KeyDownEvent (int key) {
 	// console tab switching
 	if ( key == K_LEFTARROW && keys[K_ALT].down ) {
 		Con_NextConsole( -1 );
+		return;
 	} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
 		Con_NextConsole( 1 );
+		return;
 	}
 
 	// console scrolling
