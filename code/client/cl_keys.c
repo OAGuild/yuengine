@@ -653,7 +653,7 @@ Handles history and console scrollback
 */
 void Console_KeyDownEvent (int key) {
 	int conNum = activeCon - con;
-	qboolean isChat = conNum == CON_CHAT || conNum == CON_TCHAT;
+	qboolean isChat = CON_ISCHAT( conNum );
 
 	// enter finishes the line
 	if ( key == K_ENTER || key == K_KP_ENTER ) {
