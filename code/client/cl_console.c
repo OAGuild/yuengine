@@ -714,7 +714,7 @@ static int CL_PlayerNameToClientNum( const char *name, int n ) {
 	const char *info = cl.gameState.stringData +
 		cl.gameState.stringOffsets[CS_SERVERINFO];
 	int count = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
-	char cleanName[MAX_NAME_LENGTH];
+	char cleanName[MAX_EDIT_LINE];
 
 	int i;
 	int clientNum = -1;
