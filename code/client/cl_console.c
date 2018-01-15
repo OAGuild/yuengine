@@ -226,9 +226,6 @@ void Con_ToggleConsole_f( void )
 
 	Con_ClearNotify ();
 
-	// change to all-console
-	activeCon = &cons[CON_ALL];
-
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
 
 }
@@ -486,10 +483,12 @@ Con_ClearNotify
 ================
 */
 void Con_ClearNotify( void ) {
-	int		i;
+	int		i, j;
 
-	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
-		activeCon->times[i] = 0;
+	for ( i = 0 ; i < NUM_CON ; i++ ) {
+		for ( j = 0 ; j < NUM_CON_TIMES ; j++ ) {
+			cons[i].times[j] = 0;
+		}
 	}
 }
 
@@ -927,10 +926,10 @@ void Con_DrawInput (void) {
 ================
 Con_DrawNotify
 
-Draws the last few lines of output transparently over the game top
+Draws the last few lines of output from console transparently over the game top
 ================
 */
-void Con_DrawNotify (void)
+void Con_DrawNotify (console_t *con)
 {
 	int		x, v;
 	short	*text;
@@ -943,23 +942,23 @@ void Con_DrawNotify (void)
 	re.SetColor( g_color_table[currentColor] );
 
 	v = 2;
-	for (i= activeCon->current-NUM_CON_TIMES+1 ; i<=activeCon->current ; i++)
+	for (i= con->current-NUM_CON_TIMES+1 ; i<=con->current ; i++)
 	{
 		if (i < 0)
 			continue;
-		time = activeCon->times[i % NUM_CON_TIMES];
+		time = con->times[i % NUM_CON_TIMES];
 		if (time == 0)
 			continue;
 		time = cls.realtime - time;
 		if (time > con_notifytime->value*1000)
 			continue;
-		text = activeCon->text + (i % activeCon->totallines)*activeCon->linewidth;
+		text = con->text + (i % con->totallines)*con->linewidth;
 
 		if (cl.snap.ps.pm_type != PM_INTERMISSION && Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
 			continue;
 		}
 
-		for (x = 0 ; x < activeCon->linewidth ; x++) {
+		for (x = 0 ; x < con->linewidth ; x++) {
 			if ( ( text[x] & 0xff ) == ' ' ) {
 				continue;
 			}
@@ -967,7 +966,7 @@ void Con_DrawNotify (void)
 				currentColor = ColorIndexForNumber( text[x]>>8 );
 				re.SetColor( g_color_table[currentColor] );
 			}
-			SCR_DrawSmallChar( cl_conXOffset->integer + activeCon->xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
+			SCR_DrawSmallChar( cl_conXOffset->integer + con->xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 		}
 
 		v += SMALLCHAR_HEIGHT;
@@ -1152,7 +1151,7 @@ void Con_DrawConsole( void ) {
 	} else {
 		// draw notify lines
 		if ( clc.state == CA_ACTIVE ) {
-			Con_DrawNotify ();
+			Con_DrawNotify ( &cons[CON_ALL] );
 		}
 	}
 }
