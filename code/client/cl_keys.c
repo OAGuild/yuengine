@@ -652,7 +652,7 @@ Handles history and console scrollback
 ====================
 */
 void Console_KeyDownEvent (int key) {
-	int conNum = activeCon - con;
+	int conNum = activeCon - cons;
 	qboolean isChat = CON_ISCHAT( conNum );
 
 	// enter finishes the line
@@ -678,10 +678,10 @@ void Console_KeyDownEvent (int key) {
 	
 	// console tab switching
 	if ( key == K_LEFTARROW && keys[K_ALT].down ) {
-		Con_NextConsole( -1 );
+		Con_PrevConsoleTab();
 		return;
 	} else if ( key == K_RIGHTARROW && keys[K_ALT].down ) {
-		Con_NextConsole( 1 );
+		Con_NextConsoleTab();
 		return;
 	}
 
@@ -747,11 +747,11 @@ void Console_CharEvent( int ch ) {
 		switch ( ch ) {
 		case 'p':
 		case 'P':
-			Con_NextConsole( -1 );
+			Con_PrevConsoleTab();
 			return;
 		case 'n':
 		case 'N':
-			Con_NextConsole( 1 );
+			Con_NextConsoleTab();
 			return;
 		}
 	}
@@ -759,11 +759,11 @@ void Console_CharEvent( int ch ) {
 	// tab completes command or switches console
 	if ( ch == '\t' ) {
 		if ( keys[K_SHIFT].down ) {
-			Con_NextConsole(-1);
+			Con_PrevConsoleTab();
 		} else if ( keys[K_CTRL].down ) {
-			Con_NextConsole(1);
+			Con_NextConsoleTab();
 		} else {
-			int conNum = activeCon - con;
+			int conNum = activeCon - cons;
 
 			// autocomplete only for non-chat consoles
 			if ( conNum != CON_CHAT && conNum != CON_TCHAT )
@@ -777,7 +777,7 @@ void Console_CharEvent( int ch ) {
 		// console numbers start at one, last one is 10 (accessed through 0)
 		int n = ch == '0' ? 10 : ch - '1';
 
-		Con_SwitchConsole( n );
+		Con_SwitchConsoleTab( n );
 		return;
 	}
 

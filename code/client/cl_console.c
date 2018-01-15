@@ -48,8 +48,8 @@ const int conColors[NUM_CON] = {
 // available
 int		tellClientNum = -1;
 
-console_t	con[NUM_CON];
-console_t	*activeCon = con;
+console_t	cons[NUM_CON];
+console_t	*activeCon = cons;
 
 cvar_t		*con_conspeed;
 cvar_t		*con_autoclear;
@@ -151,7 +151,7 @@ When the user enters a command in the console
 */
 void Con_AcceptLine( void )
 {
-	int conNum = activeCon - con;
+	int conNum = activeCon - cons;
 	qboolean isChat = CON_ISCHAT(conNum);
 
 	Con_PrependSlashIfNeeded( &g_consoleField, conNum );
@@ -227,7 +227,7 @@ void Con_ToggleConsole_f( void )
 	Con_ClearNotify ();
 
 	// change to all-console
-	activeCon = &con[CON_ALL];
+	activeCon = &cons[CON_ALL];
 
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
 
@@ -495,29 +495,39 @@ void Con_ClearNotify( void ) {
 
 /*
 ================
-Con_SwitchConsole
+Con_SwitchConsoleTab
 
-Change to console number n
+Change to console tab number n
 ================
 */
-void Con_SwitchConsole( int n ) {
+void Con_SwitchConsoleTab( int n ) {
 	if ( n >= 0 && n < NUM_CON ) {
-		con[n].displayFrac = activeCon->displayFrac;
-		con[n].finalFrac = activeCon->finalFrac;
-		activeCon = &con[n];
+		cons[n].displayFrac = activeCon->displayFrac;
+		cons[n].finalFrac = activeCon->finalFrac;
+		activeCon = &cons[n];
 	}
+}
+
+/*
+================
+Con_PrevConsoleTab
+
+Change to the next console tab
+================
+*/
+void Con_PrevConsoleTab() {
+	Con_SwitchConsoleTab( (NUM_CON + activeCon - cons - 1) % NUM_CON );
 }
 
 /*
 ================
 Con_NextConsole
 
-Change to console n steps relative to current console, will wrap around, n can
-be negative in which case it will switch backwards
+Change to the next console tab
 ================
 */
-void Con_NextConsole( int n ) {
-	Con_SwitchConsole( (NUM_CON + activeCon - con + n) % NUM_CON );
+void Con_NextConsoleTab() {
+	Con_SwitchConsoleTab( (NUM_CON + activeCon - cons + 1) % NUM_CON );
 }
 
 
@@ -688,14 +698,14 @@ Initialize the consoles
 static void CL_InitConsoles( void ) {
 	int i;
 	for ( i = 0; i < NUM_CON; ++i ) {
-		if ( !con[i].initialized ) {
-			con[i].color[0] =
-			con[i].color[1] =
-			con[i].color[2] =
-			con[i].color[3] = 1.0f;
-			con[i].linewidth = -1;
-			Con_CheckResize( &con[i] );
-			con[i].initialized = qtrue;
+		if ( !cons[i].initialized ) {
+			cons[i].color[0] =
+			cons[i].color[1] =
+			cons[i].color[2] =
+			cons[i].color[3] = 1.0f;
+			cons[i].linewidth = -1;
+			Con_CheckResize( &cons[i] );
+			cons[i].initialized = qtrue;
 		}
 	}
 }
@@ -867,14 +877,14 @@ void CL_ConsolePrint( char *txt )
 	}
 	lastCmdNum = cmdNum;
 
-	CL_ConsolePrintToCon( txt, &con[CON_ALL] );
-	CL_ConsolePrintToCon( txt, &con[conNum] );
+	CL_ConsolePrintToCon( txt, &cons[CON_ALL] );
+	CL_ConsolePrintToCon( txt, &cons[conNum] );
 
 	// alert user if a message comes from non-unique playername
 	if (conNum == CON_TELL && tellClientNum == -2 ) {
 		const char *msg = "^3Non-unique sender name: Reply has been disabled\n";
-		CL_ConsolePrintToCon( msg, &con[CON_ALL] );
-		CL_ConsolePrintToCon( msg, &con[CON_TELL] );
+		CL_ConsolePrintToCon( msg, &cons[CON_ALL] );
+		CL_ConsolePrintToCon( msg, &cons[CON_TELL] );
 	}
 }
 
@@ -1101,7 +1111,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 		tabWidth = SMALLCHAR_WIDTH * (strlen( name ) + 2);
 
-		if (&con[x] == activeCon) {
+		if (&cons[x] == activeCon) {
 			SCR_FillRect(horOffset, vertOffset, tabWidth,
 					SMALLCHAR_HEIGHT,
 					g_color_table[conColors[x]]);
