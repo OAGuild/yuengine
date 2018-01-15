@@ -96,11 +96,10 @@ Command `replymode`
 -----------------
 
 Works like `messagemode1` or `messagemode2`.  Used to quickly reply to a
-message without using the console.  When this command is entered a `tell
-`*`clientNum`*`: `-prompt (where *`clientNum`* is the client number of the
-target client) shows up in the top left.  The target is the client who sent the
-last private message to your client.  The text will be sent privately to the
-target client, as if the `tell` command was used.
+message without using the console.  When this command is entered a `tell:
+`-prompt shows up in the top left, with the target being the last client who
+sent private message to your client.  The text entered will be sent privately
+to the target client, as if the `tell` command was used.
 
 Command `cmdmode`
 -----------------
@@ -202,8 +201,7 @@ entering characters, and recalling previously entered commands in history.
 
 This has been improved so the user has access to almost all keyboard commands
 that are available in the in-game console.  The commands not available are
-`CTRL-Del` and `CTRL-Backspace`, and console-specific commands for scrolling
-and clearing.
+`CTRL-Del` and `CTRL-Backspace`, and console-specific commands for scrolling.
 
 In the tty-console, the keyboard commands using ALT is accessed by prefixing
 the key with `ESC`.  So `ESC-b` is equivalent to `ALT-b` in the in-game

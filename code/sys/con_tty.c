@@ -281,6 +281,37 @@ void CON_SigCont(int signum)
 
 /*
 ==================
+CON_RedrawEditLine
+
+Redraws the entire edit line
+==================
+*/
+static void CON_RedrawEditLine( void )
+{
+	// should be enough to fit the entire output
+	char output[
+		MAX_EDIT_LINE + sizeof "\r\x1B[K" TTY_CONSOLE_PROMPT + 8
+	];
+
+	// how many columns the cursor should move back after edit line has been
+	// drawn
+	int curmove = strlen(TTY_con.buffer) + 1 - TTY_con.cursor;
+	if (curmove < 0) {
+		curmove = 0;
+	}
+
+	// fill output buffer with the output
+	Com_sprintf(
+		output, sizeof(output),
+		"\r\x1B[2K" TTY_CONSOLE_PROMPT "%s \x1B[%dD",
+		TTY_con.buffer, curmove);
+
+	// write output
+	write(STDOUT_FILENO, output, strlen(output));
+}
+
+/*
+==================
 CON_Init
 
 Initialize the console input (tty mode if possible)
@@ -339,34 +370,16 @@ void CON_Init( void )
 }
 
 /*
-==================
-CON_RedrawEditLine
+================
+CON_ClearScreen
 
-Redraws the entire edit line
-==================
+Generate ASCII escape code to clear the screen, and redraw the edit-line
+================
 */
-void CON_RedrawEditLine( void )
+static void CON_ClearScreen( void )
 {
-	// should be enough to fit the entire output
-	char output[
-		MAX_EDIT_LINE + sizeof "\r\x1B[K" TTY_CONSOLE_PROMPT + 8
-	]; 
-
-	// how many columns the cursor should move back after edit line has been
-	// drawn
-	int curmove = strlen(TTY_con.buffer) + 1 - TTY_con.cursor;
-	if (curmove < 0) {
-		curmove = 0;
-	}
-
-	// fill output buffer with the output
-	Com_sprintf(
-		output, sizeof(output),
-		"\r\x1B[2K" TTY_CONSOLE_PROMPT "%s \x1B[%dD",
-		TTY_con.buffer, curmove);
-
-	// write output
-	write(STDOUT_FILENO, output, strlen(output));
+	write(STDOUT_FILENO, "\x1B[2J\x1B[H", 7);
+	CON_RedrawEditLine();
 }
 
 void CON_HistPrev( void )
@@ -502,12 +515,12 @@ char *CON_Input( void )
 				CON_RedrawEditLine();
 				return NULL;
 			}
-			if (tolower(key) == 'u' && meta_on) { 
+			if (tolower(key) == 'u' && meta_on) {
 				Field_MakeWordUpper( &TTY_con );
 				CON_RedrawEditLine();
 				return NULL;
 			}
-			if (tolower(key) == 'l' && meta_on ) { 
+			if (tolower(key) == 'l' && meta_on ) {
 				Field_MakeWordLower( &TTY_con );
 				CON_RedrawEditLine();
 				return NULL;
@@ -590,8 +603,10 @@ char *CON_Input( void )
 				CON_HistPrev();
 				return NULL;
 			}
-			if (key == '\t')
-			{
+			if (key == CTRL('L')) {
+				CON_ClearScreen();
+			}
+			if (key == '\t') {
 				if (*TTY_con.buffer) {
 					CON_Hide();
 					Field_AutoComplete( &TTY_con );
@@ -601,8 +616,7 @@ char *CON_Input( void )
 			}
 
 			// VT 100 keys
-			if (meta_on && (key == '[' || key == 'O'))
-			{
+			if (meta_on && (key == '[' || key == 'O')) {
 				qboolean ctrl_on = qfalse;
 				avail = read(STDIN_FILENO, &key, 1);
 
@@ -628,10 +642,8 @@ char *CON_Input( void )
 					}
 				}
 
-				if (avail != -1)
-				{
-					switch (key)
-					{
+				if (avail != -1) {
+					switch (key) {
 						case 'A': // up arrow
 							CON_HistPrev();
 							return NULL;
@@ -672,8 +684,7 @@ char *CON_Input( void )
 
 		return NULL;
 	}
-	else if (stdin_active)
-	{
+	else if (stdin_active) {
 		int     len;
 		fd_set  fdset;
 		struct timeval timeout;
@@ -688,8 +699,7 @@ char *CON_Input( void )
 			return NULL;
 
 		len = read(STDIN_FILENO, text, sizeof(text));
-		if (len == 0)
-		{ // eof!
+		if (len == 0) { // eof!
 			stdin_active = qfalse;
 			return NULL;
 		}
