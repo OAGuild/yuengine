@@ -234,15 +234,15 @@ slash will be interpreted as chat commands.
 In the `sys` console all lines are interpreted as commands, independent of
 `con_autochat`.
 
-In the `chat` and `tchat` consoles, all lines typed will be implicitly
-interpreted as chat commands.  So the line `Hello, world!` will become the
-command `say Hello, world!` in the `chat` console or `say_team Hello, world!`
-in the `tchat` console.  This is true even if the line contains a preceding
-slash.
+In the `chat` and `tchat` consoles, all lines typed will be interpreted as chat
+commands.  So the line `Hello, world!` will become the command `say Hello,
+world!` in the `chat` console or `say_team Hello, world!` in the `tchat`
+console.  This is true even if the line contains a preceding slash.
 
-In the `tell` console, lines will be implicitly converted to a command to reply
-to the last received message.  This is disabled when there is more than one
-player with the name of the sender.
+In the `tell` console, lines will be interpreted as a command to reply to the
+last received message.  So the line `Hello, world!` will become the command
+`reply Hello, world!`.  This is true even if the line contains a preceding
+slash.
 
 The console filtering is especially useful for keeping chat history through map
 switches, as all the system messages will not get displayed in the chat
