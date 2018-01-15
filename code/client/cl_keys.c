@@ -758,17 +758,9 @@ void Console_CharEvent( int ch ) {
 
 	// tab completes command or switches console
 	if ( ch == '\t' ) {
-		if ( keys[K_SHIFT].down ) {
-			Con_PrevConsoleTab();
-		} else if ( keys[K_CTRL].down ) {
-			Con_NextConsoleTab();
-		} else {
-			int conNum = activeCon - cons;
-
-			// autocomplete only for non-chat consoles
-			if ( conNum != CON_CHAT && conNum != CON_TCHAT )
-				Field_AutoComplete( &g_consoleField );
-		}
+		// autocomplete only for non-chat consoles
+		if ( CON_ISCHAT( activeCon - cons ) )
+			Field_AutoComplete( &g_consoleField );
 		return;
 	}
 
