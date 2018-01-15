@@ -406,10 +406,49 @@ void Con_Dump_f (void)
 	int		bufferlen;
 	char	*buffer;
 	char	filename[MAX_QPATH];
+	console_t	*con;
 
-	if (Cmd_Argc() != 2)
+	if (Cmd_Argc() == 2)
 	{
-		Com_Printf ("usage: condump <filename>\n");
+		con = &cons[CON_ALL];
+	}
+	else if (Cmd_Argc() == 3)
+	{
+		const char *arg = Cmd_Argv( 2 );
+		char *p;
+		int n = strtod(arg, &p);
+
+		if (*p == '\0') // it is a number argument
+		{
+			if ( n < 0 || n >= NUM_CON ) {
+				Com_Printf ("Invalid console index %d (valid values are "
+						"0-%d)\n", n, NUM_CON - 1);
+				return;
+			}
+			con = &cons[n];
+		}
+		else
+		{
+			// check if the name matches any of the console names
+			for ( i = 0 ; i < NUM_CON ; ++i )
+			{
+				if ( Q_stricmp( arg, conNames[i] ) == 0 )
+				{
+					con = &cons[i];
+					break;
+				}
+			}
+
+			// we didn't find a console
+			if ( i == NUM_CON ) {
+				Com_Printf ("Could not find console %s\n", arg);
+				return;
+			}
+		}
+	}
+	else
+	{
+		Com_Printf ("usage: condump <filename> [console]\n");
 		return;
 	}
 
@@ -429,35 +468,36 @@ void Con_Dump_f (void)
 		return;
 	}
 
-	Com_Printf ("Dumped console text to %s.\n", filename );
+	Com_Printf ("Dumped %s-console text to %s.\n", conNames[con - cons],
+			filename );
 
 	// skip empty lines
-	for (l = activeCon->current - activeCon->totallines + 1 ; l <= activeCon->current ; l++)
+	for (l = con->current - con->totallines + 1 ; l <= con->current ; l++)
 	{
-		line = activeCon->text + (l%activeCon->totallines)*activeCon->linewidth;
-		for (x=0 ; x<activeCon->linewidth ; x++)
+		line = con->text + (l%con->totallines)*con->linewidth;
+		for (x=0 ; x<con->linewidth ; x++)
 			if ((line[x] & 0xff) != ' ')
 				break;
-		if (x != activeCon->linewidth)
+		if (x != con->linewidth)
 			break;
 	}
 
 #ifdef _WIN32
-	bufferlen = activeCon->linewidth + 3 * sizeof ( char );
+	bufferlen = con->linewidth + 3 * sizeof ( char );
 #else
-	bufferlen = activeCon->linewidth + 2 * sizeof ( char );
+	bufferlen = con->linewidth + 2 * sizeof ( char );
 #endif
 
 	buffer = Hunk_AllocateTempMemory( bufferlen );
 
 	// write the remaining lines
 	buffer[bufferlen-1] = 0;
-	for ( ; l <= activeCon->current ; l++)
+	for ( ; l <= con->current ; l++)
 	{
-		line = activeCon->text + (l%activeCon->totallines)*activeCon->linewidth;
-		for(i=0; i<activeCon->linewidth; i++)
+		line = con->text + (l%con->totallines)*con->linewidth;
+		for(i=0; i<con->linewidth; i++)
 			buffer[i] = line[i] & 0xff;
-		for (x=activeCon->linewidth-1 ; x>=0 ; x--)
+		for (x=con->linewidth-1 ; x>=0 ; x--)
 		{
 			if (buffer[x] == ' ')
 				buffer[x] = 0;
