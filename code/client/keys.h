@@ -46,8 +46,8 @@ extern	field_t	chatField;
 extern	int				anykeydown;
 
 enum {
-	CHAT_CHAT,
-	CHAT_TCHAT,
+	CHAT_SAY,
+	CHAT_SAY_TEAM,
 	CHAT_TELL,
 	CHAT_CMD
 };

@@ -811,7 +811,7 @@ void Message_Key( int key ) {
 					Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n",
 							chat_playerNum, chatField.buffer );
 				}
-			} else if (chat_type == CHAT_TCHAT) {
+			} else if (chat_type == CHAT_SAY_TEAM) {
 				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer );
 			} else if (chat_type == CHAT_CMD) {
 				Con_PrependSlashIfNeeded( &chatField, CON_SYS );

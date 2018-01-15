@@ -247,7 +247,7 @@ Con_MessageMode_f
 */
 void Con_MessageMode_f (void) {
 	chat_playerNum = -1;
-	chat_type = CHAT_CHAT;
+	chat_type = CHAT_SAY;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
 
@@ -261,7 +261,7 @@ Con_MessageMode2_f
 */
 void Con_MessageMode2_f (void) {
 	chat_playerNum = -1;
-	chat_type = CHAT_TCHAT;
+	chat_type = CHAT_SAY_TEAM;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 25;
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_MESSAGE );
@@ -981,10 +981,10 @@ void Con_DrawNotify (console_t *con)
 	// draw the chat line
 	if ( Key_GetCatcher( ) & KEYCATCH_MESSAGE )
 	{
-		if (chat_type == CHAT_CHAT) {
+		if (chat_type == CHAT_SAY) {
 			SCR_DrawBigString (8, v, "say:", 1.0f, qfalse );
 			skip = 5;
-		} else if (chat_type == CHAT_TCHAT) {
+		} else if (chat_type == CHAT_SAY_TEAM) {
 			SCR_DrawBigString (8, v, "say_team:", 1.0f, qfalse );
 			skip = 10;
 		} else if (chat_type == CHAT_CMD) {
