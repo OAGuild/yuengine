@@ -1111,7 +1111,7 @@ void Con_DrawSolidConsole( float frac ) {
 		tabWidth = SMALLCHAR_WIDTH * (strlen( name ) + 2);
 
 		if (&cons[x] == activeCon) {
-			SCR_FillRect(horOffset, vertOffset, tabWidth,
+			SCR_FillRectNoAdjust(horOffset, vertOffset, tabWidth,
 					SMALLCHAR_HEIGHT,
 					g_color_table[conColors[x]]);
 			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH,

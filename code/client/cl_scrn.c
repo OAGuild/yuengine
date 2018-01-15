@@ -84,6 +84,23 @@ void SCR_AdjustFrom640( float *x, float *y, float *w, float *h ) {
 	}
 }
 
+
+/*
+================
+SCR_FillRectNoAdjust
+
+Coordinates are *NOT* 640*480 virtual values
+=================
+*/
+void SCR_FillRectNoAdjust( float x, float y, float width, float height, const float *color ) {
+	re.SetColor( color );
+
+	re.DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
+
+	re.SetColor( NULL );
+}
+
+
 /*
 ================
 SCR_FillRect
@@ -92,12 +109,9 @@ Coordinates are 640*480 virtual values
 =================
 */
 void SCR_FillRect( float x, float y, float width, float height, const float *color ) {
-	re.SetColor( color );
 
 	SCR_AdjustFrom640( &x, &y, &width, &height );
-	re.DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
-
-	re.SetColor( NULL );
+	SCR_FillRectNoAdjust( x, y, width, height, color );
 }
 
 
