@@ -227,7 +227,7 @@ summarized in the following table.
 | 5      | `tell`  | Private messages   | Reply to message          |
 
 The `all` console works just like the normal quake console.  It will display
-all messages and is the default console opened with the console-key.  If
+all messages and is the default console when the client starts.  If
 `con_autochat` is non-zero, lines typed in this console without a preceding
 slash will be interpreted as chat commands.
 
@@ -247,4 +247,8 @@ slash.
 The console filtering is especially useful for keeping chat history through map
 switches, as all the system messages will not get displayed in the chat
 consoles.  Similarly chat messages will not get displayed in the `sys` console.
-The `condump`-command will dump the content of the active console-tab.
+
+The `condump`-command takes an optional parameter specifying which console to
+dump text from.  The parameter can be the index (starting at 0) of the console,
+or the name of the console.  If this optional parameter is omitted, then the
+`all` console is assumed.
