@@ -441,7 +441,7 @@ void Con_Dump_f (void)
 
 			// we didn't find a console
 			if ( i == NUM_CON ) {
-				Com_Printf ("Could not find console %s\n", arg);
+				Com_Printf ("Invalid console name %s\n", arg);
 				return;
 			}
 		}
