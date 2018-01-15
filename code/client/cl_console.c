@@ -763,16 +763,19 @@ static int CL_PlayerNameToClientNum( const char *name, int n ) {
 	const char *info = cl.gameState.stringData +
 		cl.gameState.stringOffsets[CS_SERVERINFO];
 	int count = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
-	char cleanName[MAX_EDIT_LINE];
+
+	// use MAX_EDIT_LINE instead of MAX_NAME_LENGTH because some mods allow
+	// for names larger than MAX_NAME_LENGTH (defined as 32)
+	char clientName[MAX_EDIT_LINE];
 
 	int i;
 	int clientNum = -1;
 	for( i = 0; i < count; i++ ) {
 
 		info = cl.gameState.stringData + cl.gameState.stringOffsets[CS_PLAYERS+i];
-		Q_strncpyz( cleanName, Info_ValueForKey( info, "n" ), sizeof(cleanName) );
+		Q_strncpyz( clientName, Info_ValueForKey( info, "n" ), sizeof(clientName) );
 
-		if ( Q_strncmp( cleanName, name, n ) == 0 ) {
+		if ( Q_strncmp( clientName, name, n ) == 0 ) {
 			if (clientNum >= 0)
 				return -2; // more than 1 player with the name
 			clientNum = i;
@@ -921,7 +924,8 @@ void CL_ConsolePrint( char *txt )
 
 	// alert user if a message comes from non-unique playername
 	if (conNum == CON_TELL && tellClientNum == -2 ) {
-		const char *msg = "^3Non-unique sender name: Reply has been disabled\n";
+		const char *msg = "^3Non-unique sender name, cannot reply to "
+			"this user\n";
 		CL_ConsolePrintToCon( msg, &cons[CON_ALL] );
 		CL_ConsolePrintToCon( msg, &cons[CON_TELL] );
 	}
