@@ -212,12 +212,6 @@ typedef int		clipHandle_t;
 // get ascii control character for character
 #define CTRL( a ) (toupper( a ) - 'A' + 1)
 
-// convert angle from radians to degrees
-#define DEGREES( a ) ((a) * 180.0 / M_PI)
-
-// convert angle from degrees to radians
-#define RADIANS( a ) ((a) / 180.0 * M_PI)
-
 #define PAD(base, alignment)	(((base)+(alignment)-1) & ~((alignment)-1))
 #define PADLEN(base, alignment)	(PAD((base), (alignment)) - (base))
 

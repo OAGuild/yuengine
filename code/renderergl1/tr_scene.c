@@ -284,7 +284,7 @@ ratio. FOV input and output are in degrees.
 */
 static float RE_VfovToHfov( float vfov, float aspect )
 {
-	return 2.0 * DEGREES( atan( tan( RADIANS( vfov ) / 2.0 ) * aspect ) );
+	return 2.0 * RAD2DEG( atan( tan( DEG2RAD( vfov ) / 2.0 ) * aspect ) );
 }
 
 /*
@@ -297,7 +297,7 @@ ratio. FOV input and output are in degrees.
 */
 static float RE_HfovToVfov( float hfov, float aspect )
 {
-	return 2.0 * DEGREES( atan( tan( RADIANS( hfov ) / 2.0 ) / aspect ) );
+	return 2.0 * RAD2DEG( atan( tan( DEG2RAD( hfov ) / 2.0 ) / aspect ) );
 }
 
 /*
