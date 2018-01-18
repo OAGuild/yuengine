@@ -173,11 +173,11 @@ void Con_AcceptLine( void )
 			if ( (con_autochat->integer && conNum == CON_ALL) || conNum == CON_CHAT ) {
 				Cbuf_AddText( "cmd say \"" );
 				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText( "\"" );
+				Cbuf_AddText( "\"\n" );
 			} else if ( conNum == CON_TCHAT ) {
 				Cbuf_AddText( "cmd say_team \"" );
 				Cbuf_AddText( g_consoleField.buffer );
-				Cbuf_AddText( "\"" );
+				Cbuf_AddText( "\"\n" );
 			} else if ( conNum == CON_TELL ) {
 				if ( tellClientNum >= 0 ) {
 					char cmd[MAX_EDIT_LINE + 16 ];
