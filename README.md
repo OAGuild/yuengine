@@ -40,15 +40,15 @@ will eventually be backported to Yu Engine (atleast that is the plan).
 Compilation instructions
 ------------------------
 
-For \*nix
+### Building on \*nix
   1. Change to the directory containing this readme.
   2. Run `make`.
 
-For Windows,
+### Building on Windows,
   1. Please refer to [the ioquake build instructions]
      (http://wiki.ioquake3.org/Building_ioquake3).
 
-For Mac OS X, building a Universal Binary
+### Building on Mac OS X
   1. Install MacOSX SDK packages from XCode.  For maximum compatibility,
      install `MacOSX10.4u.sdk` and `MacOSX10.3.9.sdk`, and `MacOSX10.2.8.sdk`.
   2. Change to the directory containing this README file.
@@ -56,7 +56,7 @@ For Mac OS X, building a Universal Binary
   4. Copy the resulting ioquake3.app in `/build/release-darwin-ub` to your
      `/Applications/ioquake3` folder.
 
-Installation, for \*nix
+### Installation, for \*nix
   1. Set the `COPYDIR` variable in the shell to be where you have the OpenArena
      gamecode files.  By default it will be `/usr/local/games/openarena` if you
      haven't set it.  Note that the OpenArena gamecode shipped with on Debian
