@@ -42,31 +42,31 @@ Compilation instructions
 
 For \*nix
   1. Change to the directory containing this readme.
-  2. Run 'make'.
+  2. Run `make`.
 
 For Windows,
-  1. Please refer to the excellent instructions here:
-     http://wiki.ioquake3.org/Building_ioquake3
+  1. Please refer to [the ioquake build instructions]
+     (http://wiki.ioquake3.org/Building_ioquake3).
 
 For Mac OS X, building a Universal Binary
   1. Install MacOSX SDK packages from XCode.  For maximum compatibility,
-     install MacOSX10.4u.sdk and MacOSX10.3.9.sdk, and MacOSX10.2.8.sdk.
+     install `MacOSX10.4u.sdk` and `MacOSX10.3.9.sdk`, and `MacOSX10.2.8.sdk`.
   2. Change to the directory containing this README file.
-  3. Run './make-macosx-ub.sh'
-  4. Copy the resulting ioquake3.app in /build/release-darwin-ub to your
-     /Applications/ioquake3 folder.
+  3. Run `./make-macosx-ub.sh`
+  4. Copy the resulting ioquake3.app in `/build/release-darwin-ub` to your
+     `/Applications/ioquake3` folder.
 
 Installation, for \*nix
-  1. Set the COPYDIR variable in the shell to be where you installed Quake 3
-     to. By default it will be /usr/local/games/quake3 if you haven't set it.
-     This is the path as used by the original Linux Q3 installer and subsequent
-     point releases.
-  2. Run 'make copyfiles'.
+  1. Set the `COPYDIR` variable in the shell to be where you have the OpenArena
+     gamecode files.  By default it will be `/usr/local/games/openarena` if you
+     haven't set it.  Note that the OpenArena gamecode shipped with on Debian
+     GNU/Linux repositories does not work with yuengine.
+  2. Run `make copyfiles`.
 
 It is also possible to cross compile for Windows under \*nix using MinGW. Your
 distribution may have mingw32 packages available. On debian/Ubuntu, you need to
-install 'mingw-w64'. Thereafter cross compiling is simply a case running
-'PLATFORM=mingw32 ARCH=x86 make' in place of 'make'. ARCH may also be set to
+install `mingw-w64`. Thereafter cross compiling is simply a case running
+`PLATFORM=mingw32 ARCH=x86 make` in place of `make`. ARCH may also be set to
 x86\_64.
 
 Build options

@@ -29,15 +29,15 @@ DESTDIR=build/release-darwin-${BUILDARCH}
 
 cd `dirname $0`
 if [ ! -f Makefile ]; then
-	echo "This script must be run from the ioquake3 build directory"
+	echo "This script must be run from the yuengine build directory"
 	exit 1
 fi
 
 # we want to use the oldest available SDK for max compatiblity. However 10.4 and older
 # can not build 64bit binaries, making 10.5 the minimum version.   This has been tested 
 # with xcode 3.1 (xcode31_2199_developerdvd.dmg).  It contains the 10.5 SDK and a decent
-# enough gcc to actually compile ioquake3
-# For PPC macs, G4's or better are required to run ioquake3.
+# enough gcc to actually compile yuengine
+# For PPC macs, G4's or better are required to run yuengine.
 
 unset ARCH_SDK
 unset ARCH_CFLAGS

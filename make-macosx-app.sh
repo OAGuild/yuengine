@@ -165,7 +165,7 @@ PKGINFO="APPLIOQ3"
 
 OBJROOT="build"
 #BUILT_PRODUCTS_DIR="${OBJROOT}/${TARGET_NAME}-darwin-${CURRENT_ARCH}"
-PRODUCT_NAME="ioquake3"
+PRODUCT_NAME="yuoa"
 WRAPPER_EXTENSION="app"
 WRAPPER_NAME="${PRODUCT_NAME}.${WRAPPER_EXTENSION}"
 CONTENTS_FOLDER_PATH="${WRAPPER_NAME}/Contents"
@@ -238,12 +238,12 @@ done
 cd `dirname $0`
 
 if [ ! -f Makefile ]; then
-	echo "$0 must be run from the ioquake3 build directory"
+	echo "$0 must be run from the yuengine build directory"
 	exit 1
 fi
 
 if [ "${IOQ3_CLIENT_ARCHS}" == "" ]; then
-	echo "$0: no ioquake3 binary architectures were found for target '${TARGET_NAME}'"
+	echo "$0: no yuengine binary architectures were found for target '${TARGET_NAME}'"
 	exit 1
 fi
 
