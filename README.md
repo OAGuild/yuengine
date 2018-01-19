@@ -72,42 +72,40 @@ Makefile.local. The defaults of these differ depending on the target platform.
 The one difference from ioquake3 is that `BUILD_RENDERER_OPENGL2` and
 `USE_RENDERER_DLOPEN` is `0` (disabled) by default.
 
-| Build flag               | Purpose                                          |
-| ------------------------ | ------------------------------------------------ |
-| `CFLAGS`                 | Use this for custom CFLAGS                       |
-| `V`                      | Set to show cc command line when building        |
-| `DEFAULT_BASEDIR`        | Extra path to search for baseoa and such         |
-| `BUILD_SERVER`           | Build the 'yuoaded' server binary                |
-| `BUILD_CLIENT`           | Build the 'yuoa' client binary                   |
-| `BUILD_RENDERER_OPENGL2` | Build opengl2 renderer                           |
-| `BUILD_INTERNAL_FONT`    | Include the internal font in the renderer        |
-| `SERVERBIN`              | Rename 'yuoaded' server binary                   |
-| `CLIENTBIN`              | Rename 'yuoa' client binary                      |
-| `USE_RENDERER_DLOPEN`    | Build and use the renderer in a library          |
-| `USE_YACC`               | Use yacc to update code/tools/lcc/lburg/gram.c   |
-| `USE_OPENAL`             | Use OpenAL where available                       |
-| `USE_OPENAL_DLOPEN`      | Link with OpenAL at runtime                      |
-| `USE_CURL`               | Use libcurl for http/ftp download support        |
-| `USE_CURL_DLOPEN`        | Link with libcurl at runtime                     |
-| `USE_CODEC_VORBIS`       | Enable Ogg Vorbis support                        |
-| `USE_CODEC_OPUS`         | Enable Ogg Opus support                          |
-| `USE_MUMBLE`             | Enable Mumble support                            |
-| `USE_VOIP`               | Enable built-in VoIP support                     |
-| `USE_FREETYPE`           | Enable FreeType support for rendering fonts      |
-| `USE_INTERNAL_LIBS`      | Build internal libraries instead of dynamically  |
-|                          | linking against system libraries; this just sets |
-|                          | the default for USE_INTERNAL_ZLIB etc.           |
-|                          | and USE_LOCAL_HEADERS                            |
-| `USE_INTERNAL_ZLIB`      | Build and link against internal zlib             |
-| `USE_INTERNAL_JPEG`      | Build and link against internal JPEG library     |
-| `USE_INTERNAL_OGG`       | Build and link against internal ogg library      |
-| `USE_INTERNAL_OPUS`      | Build and link against internal opus/opusfile    |
-|                          | Libraries                                        |
-| `USE_LOCAL_HEADERS`      | Use headers local to ioq3 instead of system ones |
-| `DEBUG_CFLAGS`           | C compiler flags to use for building debug       |
-|                          | version                                          |
-| `COPYDIR`                | The target installation directory                |
-| `TEMPDIR`                | Specify user defined directory for temp files    |
+```
+CFLAGS                 - use this for custom CFLAGS
+V                      - set to show cc command line when building
+DEFAULT_BASEDIR        - extra path to search for baseq3 and such
+BUILD_SERVER           - build the 'yuoaded' server binary
+BUILD_CLIENT           - build the 'yuoa' client binary
+BUILD_RENDERER_OPENGL2 - build opengl2 renderer
+BUILD_INTERNAL_FONT    - include the internal font in the renderer
+SERVERBIN              - rename 'yuoaded' server binary
+CLIENTBIN              - rename 'yuoa' client binary
+USE_RENDERER_DLOPEN    - build and use the renderer in a library
+USE_YACC               - use yacc to update code/tools/lcc/lburg/gram.c
+USE_OPENAL             - use OpenAL where available
+USE_OPENAL_DLOPEN      - link with OpenAL at runtime
+USE_CURL               - use libcurl for http/ftp download support
+USE_CURL_DLOPEN        - link with libcurl at runtime
+USE_CODEC_VORBIS       - enable Ogg Vorbis support
+USE_CODEC_OPUS         - enable Ogg Opus support
+USE_MUMBLE             - enable Mumble support
+USE_VOIP               - enable built-in VoIP support
+USE_FREETYPE           - enable FreeType support for rendering fonts
+USE_INTERNAL_LIBS      - build internal libraries instead of dynamically
+                         linking against system libraries; this just sets
+                         the default for USE_INTERNAL_ZLIB etc.
+                         and USE_LOCAL_HEADERS
+USE_INTERNAL_ZLIB      - build and link against internal zlib
+USE_INTERNAL_JPEG      - build and link against internal JPEG library
+USE_INTERNAL_OGG       - build and link against internal ogg library
+USE_INTERNAL_OPUS      - build and link against internal opus/opusfile libraries
+USE_LOCAL_HEADERS      - use headers local to ioq3 instead of system ones
+DEBUG_CFLAGS           - C compiler flags to use for building debug version
+COPYDIR                - the target installation directory
+TEMPDIR                - specify user defined directory for temp files
+```
 
 Cvar `cl_scaleSensWithFov`
 --------------------------
@@ -266,7 +264,7 @@ Console specific GUI-style keyboard shortcuts:
 | CTRL-End          | scroll to last line                 |
 | ALT-P/ALT-Left    | previous console tab                |
 | ALT-N/ALT-Right   | next console tab                    |
-| ALT-*Digit*       | console tab number *Digit*        |
+| ALT-*Digit*       | console tab number *Digit*          |
 
 Console specific UNIX commandline-style keyboard shortcuts:
 
