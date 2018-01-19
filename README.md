@@ -5,13 +5,80 @@ Engine forked from ioquake3 for use with OpenArena.  By default it will connect
 use the OpenArena master server and use OpenArenas protocol number, removing
 the need for a wrapper script like as is required with ioquake3.
 
-Build instructions
-------------------
+Compilation instructions
+------------------------
 
-See [the README of ioquake3](./ioq3-readme.md) for instructions on how to
-compile and install this software.  Note that code for basegame, missionpack
-and auto-updater has been completely removed from the source tree.  So Ignore
-all documentation related to building those.
+For \*nix
+  1. Change to the directory containing this readme.
+  2. Run 'make'.
+
+For Windows,
+  1. Please refer to the excellent instructions here:
+     http://wiki.ioquake3.org/Building_ioquake3
+
+For Mac OS X, building a Universal Binary
+  1. Install MacOSX SDK packages from XCode.  For maximum compatibility,
+     install MacOSX10.4u.sdk and MacOSX10.3.9.sdk, and MacOSX10.2.8.sdk.
+  2. Change to the directory containing this README file.
+  3. Run './make-macosx-ub.sh'
+  4. Copy the resulting ioquake3.app in /build/release-darwin-ub to your
+     /Applications/ioquake3 folder.
+
+Installation, for \*nix
+  1. Set the COPYDIR variable in the shell to be where you installed Quake 3
+     to. By default it will be /usr/local/games/quake3 if you haven't set it.
+     This is the path as used by the original Linux Q3 installer and subsequent
+     point releases.
+  2. Run 'make copyfiles'.
+
+It is also possible to cross compile for Windows under \*nix using MinGW. Your
+distribution may have mingw32 packages available. On debian/Ubuntu, you need to
+install 'mingw-w64'. Thereafter cross compiling is simply a case running
+'PLATFORM=mingw32 ARCH=x86 make' in place of 'make'. ARCH may also be set to
+x86\_64.
+
+Build options
+-------------
+
+The following variables may be set, either on the command line or in
+Makefile.local. The defaults of these differ depending on the target platform.
+The one difference from `ioquake3` is that `BUILD_RENDERER_OPENGL2` and
+`USE_RENDERER_DLOPEN` is `0` (disabled) by default.
+
+```
+CFLAGS                 - use this for custom CFLAGS
+V                      - set to show cc command line when building
+DEFAULT_BASEDIR        - extra path to search for baseq3 and such
+BUILD_SERVER           - build the 'ioq3ded' server binary
+BUILD_CLIENT           - build the 'ioquake3' client binary
+BUILD_RENDERER_OPENGL2 - build opengl2 renderer
+BUILD_INTERNAL_FONT    - include the internal font in the renderer
+SERVERBIN              - rename 'yuoaded' server binary
+CLIENTBIN              - rename 'yuoa' client binary
+USE_RENDERER_DLOPEN    - build and use the renderer in a library
+USE_YACC               - use yacc to update code/tools/lcc/lburg/gram.c
+USE_OPENAL             - use OpenAL where available
+USE_OPENAL_DLOPEN      - link with OpenAL at runtime
+USE_CURL               - use libcurl for http/ftp download support
+USE_CURL_DLOPEN        - link with libcurl at runtime
+USE_CODEC_VORBIS       - enable Ogg Vorbis support
+USE_CODEC_OPUS         - enable Ogg Opus support
+USE_MUMBLE             - enable Mumble support
+USE_VOIP               - enable built-in VoIP support
+USE_FREETYPE           - enable FreeType support for rendering fonts
+USE_INTERNAL_LIBS      - build internal libraries instead of dynamically
+			 linking against system libraries; this just sets the
+			 default for
+USE_INTERNAL_ZLIB etc.  and USE_LOCAL_HEADERS
+USE_INTERNAL_ZLIB      - build and link against internal zlib
+USE_INTERNAL_JPEG      - build and link against internal JPEG library
+USE_INTERNAL_OGG       - build and link against internal ogg library
+USE_INTERNAL_OPUS      - build and link against internal opus/opusfile libraries
+USE_LOCAL_HEADERS      - use headers local to ioq3 instead of system ones
+DEBUG_CFLAGS           - C compiler flags to use for building debug version
+COPYDIR                - the target installation directory
+TEMPDIR                - specify user defined directory for temp files
+```
 
 Feature list
 ------------
@@ -89,25 +156,25 @@ Command `reply`
 
 Used to quickly reply to a received private message.  Works like `tell` but the
 target client is the client who send the last private message to your client.
-Reply will not not reply to players who don't have unique names (to avoid
-confusion caused from impersonation).
+Reply will not reply to players who don't have unique names (to avoid problems
+caused from impersonation).
 
 Command `replymode`
 -----------------
 
-Works like `messagemode1` or `messagemode2`.  Used to quickly reply to a
-message without using the console.  When this command is entered a `tell:
-`-prompt shows up in the top left, with the target being the last client who
-sent private message to your client.  The text entered will be sent privately
-to the target client, as if the `tell` command was used.
+Works like `messagemode`.  Used to quickly reply to a message without using the
+console.  When this command is entered a `tell: `-prompt shows up in the top
+left, with the target being the last client who sent private message to your
+client.  The text entered will be sent privately to the target client, as if
+the `tell` command was used.
 
 Command `cmdmode`
 -----------------
 
-Works like `messagemode1` or `messagemode2`.  When this command is entered a
-`]`-prompt shows up in the top left.  Then the user can enter a command that
-will be executed when `Enter` is pressed.  When in this mode the user has
-access to the editing commands that are available in the normal console.
+Works like `messagemode`.  When this command is entered a `]`-prompt shows up
+in the top left.  Then the user can enter a command that will be executed when
+`Enter` is pressed.  When in this mode the user has access to the editing
+commands that are available in the normal console.
 
 Hor+ FOV
 --------
