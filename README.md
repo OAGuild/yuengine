@@ -53,7 +53,7 @@ Compilation instructions
      install `MacOSX10.4u.sdk` and `MacOSX10.3.9.sdk`, and `MacOSX10.2.8.sdk`.
   2. Change to the directory containing this README file.
   3. Run `./make-macosx-ub.sh`
-  4. Copy the resulting yuoa.app in `/build/release-darwin-ub` to your
+  4. Copy the resulting `yuoa.app` in `/build/release-darwin-ub` to your
      `/Applications/openarena` folder.
 
 ### Installation, for \*nix
