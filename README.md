@@ -256,23 +256,23 @@ Console specific GUI-style keyboard shortcuts:
 
 | Keyboard shortcut | Command                             |
 | ----------------- | ----------------------------------- |
-| Up                | go to back in command in history    |
-| Down              | go to forward in command in history |
-| PgUp              | scroll up one line                  |
-| PgDn              | scroll down one line                |
-| CTRL-Home         | scroll to first line                |
-| CTRL-End          | scroll to last line                 |
-| ALT-P/ALT-Left    | previous console tab                |
-| ALT-N/ALT-Right   | next console tab                    |
-| ALT-*Digit*       | console tab number *Digit*          |
+| Up                | Go to back in command in history    |
+| Down              | Go to forward in command in history |
+| PgUp              | Scroll up one line                  |
+| PgDn              | Scroll down one line                |
+| CTRL-Home         | Scroll to first line                |
+| CTRL-End          | Scroll to last line                 |
+| ALT-P/ALT-Left    | Previous console tab                |
+| ALT-N/ALT-Right   | Next console tab                    |
+| ALT-*Digit*       | Console tab number *Digit*          |
 
 Console specific UNIX commandline-style keyboard shortcuts:
 
-| Keyboard shortcut | Command                           |
-| ----------------- | --------------------------------- |
-| ^P                |  go back in command in history    |
-| ^F                |  go forward in command in history |
-| ^L                |  clear console screen             |
+| Keyboard shortcut | Command                          |
+| ----------------- | -------------------------------- |
+| ^P                | Go back in command in history    |
+| ^F                | Go forward in command in history |
+| ^L                | Clear console screen             |
 
 Improved line editing in tty-console
 ------------------------------------
