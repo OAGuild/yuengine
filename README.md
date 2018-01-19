@@ -19,7 +19,7 @@ following:
   message
 - Override default font with internal one using cvar `r_useInternalFont`
 - Randomized GUID using cvar `cl_randomguid`
-- Hor+ FOV (correct implementation compared to the flawed implementation in the
+- Hor+ FOV
   official OpenArena engine)
 - Additional keyboard editing shortcuts for editing text fields
 - Improved line-editing in TTY console
@@ -69,13 +69,13 @@ Build options
 
 The following variables may be set, either on the command line or in
 Makefile.local. The defaults of these differ depending on the target platform.
-The one difference from `ioquake3` is that `BUILD_RENDERER_OPENGL2` and
+The one difference from ioquake3 is that `BUILD_RENDERER_OPENGL2` and
 `USE_RENDERER_DLOPEN` is `0` (disabled) by default.
 
 ```
 CFLAGS                 - use this for custom CFLAGS
 V                      - set to show cc command line when building
-DEFAULT_BASEDIR        - extra path to search for baseq3 and such
+DEFAULT_BASEDIR        - extra path to search for baseoa and such
 BUILD_SERVER           - build the 'yuoaded' server binary
 BUILD_CLIENT           - build the 'yuoa' client binary
 BUILD_RENDERER_OPENGL2 - build opengl2 renderer
