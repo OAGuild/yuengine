@@ -2,15 +2,10 @@ Yu Engine for OpenArena
 =======================
 
 Yu Engine is an engine fork from ioquake3 for use with OpenArena.  By default
-it will connect to the OpenArenas servers.
-
-The reason this project was initially created was because the official
-OpenArena game-engine haven't backported security changes from ioquake3 which
-makes the engine insecure, and because its developers don't want to accept
-features or bug-fixes that the author of this project wanted.  Yu Engine
-strives to be up to date with ioquake3 and implement features for increased
-convenience when playing OpenArena.  It includes many new commands and cvars
-which are documentated below.
+it will connect to the OpenArenas servers.  Yu Engine strives to be up to date
+with ioquake3 and implement features for increased convenience when playing
+OpenArena.  It includes many new commands and cvars which are documentated
+below.
 
 New features implemented in Yu Engine (compared to ioquake3) include the
 following:
