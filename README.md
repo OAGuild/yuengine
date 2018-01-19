@@ -72,40 +72,42 @@ Makefile.local. The defaults of these differ depending on the target platform.
 The one difference from ioquake3 is that `BUILD_RENDERER_OPENGL2` and
 `USE_RENDERER_DLOPEN` is `0` (disabled) by default.
 
-```
-CFLAGS                 - use this for custom CFLAGS
-V                      - set to show cc command line when building
-DEFAULT_BASEDIR        - extra path to search for baseoa and such
-BUILD_SERVER           - build the 'yuoaded' server binary
-BUILD_CLIENT           - build the 'yuoa' client binary
-BUILD_RENDERER_OPENGL2 - build opengl2 renderer
-BUILD_INTERNAL_FONT    - include the internal font in the renderer
-SERVERBIN              - rename 'yuoaded' server binary
-CLIENTBIN              - rename 'yuoa' client binary
-USE_RENDERER_DLOPEN    - build and use the renderer in a library
-USE_YACC               - use yacc to update code/tools/lcc/lburg/gram.c
-USE_OPENAL             - use OpenAL where available
-USE_OPENAL_DLOPEN      - link with OpenAL at runtime
-USE_CURL               - use libcurl for http/ftp download support
-USE_CURL_DLOPEN        - link with libcurl at runtime
-USE_CODEC_VORBIS       - enable Ogg Vorbis support
-USE_CODEC_OPUS         - enable Ogg Opus support
-USE_MUMBLE             - enable Mumble support
-USE_VOIP               - enable built-in VoIP support
-USE_FREETYPE           - enable FreeType support for rendering fonts
-USE_INTERNAL_LIBS      - build internal libraries instead of dynamically
-                         linking against system libraries; this just sets
-                         the default for USE_INTERNAL_ZLIB etc.
-                         and USE_LOCAL_HEADERS
-USE_INTERNAL_ZLIB      - build and link against internal zlib
-USE_INTERNAL_JPEG      - build and link against internal JPEG library
-USE_INTERNAL_OGG       - build and link against internal ogg library
-USE_INTERNAL_OPUS      - build and link against internal opus/opusfile libraries
-USE_LOCAL_HEADERS      - use headers local to ioq3 instead of system ones
-DEBUG_CFLAGS           - C compiler flags to use for building debug version
-COPYDIR                - the target installation directory
-TEMPDIR                - specify user defined directory for temp files
-```
+| Build flag               | Purpose                                          |
+| ------------------------ | ------------------------------------------------ |
+| `CFLAGS`                 | Use this for custom CFLAGS                       |
+| `V`                      | Set to show cc command line when building        |
+| `DEFAULT_BASEDIR`        | Extra path to search for baseoa and such         |
+| `BUILD_SERVER`           | Build the 'yuoaded' server binary                |
+| `BUILD_CLIENT`           | Build the 'yuoa' client binary                   |
+| `BUILD_RENDERER_OPENGL2` | Build opengl2 renderer                           |
+| `BUILD_INTERNAL_FONT`    | Include the internal font in the renderer        |
+| `SERVERBIN`              | Rename 'yuoaded' server binary                   |
+| `CLIENTBIN`              | Rename 'yuoa' client binary                      |
+| `USE_RENDERER_DLOPEN`    | Build and use the renderer in a library          |
+| `USE_YACC`               | Use yacc to update code/tools/lcc/lburg/gram.c   |
+| `USE_OPENAL`             | Use OpenAL where available                       |
+| `USE_OPENAL_DLOPEN`      | Link with OpenAL at runtime                      |
+| `USE_CURL`               | Use libcurl for http/ftp download support        |
+| `USE_CURL_DLOPEN`        | Link with libcurl at runtime                     |
+| `USE_CODEC_VORBIS`       | Enable Ogg Vorbis support                        |
+| `USE_CODEC_OPUS`         | Enable Ogg Opus support                          |
+| `USE_MUMBLE`             | Enable Mumble support                            |
+| `USE_VOIP`               | Enable built-in VoIP support                     |
+| `USE_FREETYPE`           | Enable FreeType support for rendering fonts      |
+| `USE_INTERNAL_LIBS`      | Build internal libraries instead of dynamically  |
+|                          | linking against system libraries; this just sets |
+|                          | the default for USE_INTERNAL_ZLIB etc.           |
+|                          | and USE_LOCAL_HEADERS                            |
+| `USE_INTERNAL_ZLIB`      | Build and link against internal zlib             |
+| `USE_INTERNAL_JPEG`      | Build and link against internal JPEG library     |
+| `USE_INTERNAL_OGG`       | Build and link against internal ogg library      |
+| `USE_INTERNAL_OPUS`      | Build and link against internal opus/opusfile    |
+|                          | Libraries                                        |
+| `USE_LOCAL_HEADERS`      | Use headers local to ioq3 instead of system ones |
+| `DEBUG_CFLAGS`           | C compiler flags to use for building debug       |
+|                          | version                                          |
+| `COPYDIR`                | The target installation directory                |
+| `TEMPDIR`                | Specify user defined directory for temp files    |
 
 Cvar `cl_scaleSensWithFov`
 --------------------------
@@ -209,62 +211,70 @@ common in general GUI software.
 
 General GUI-style keyboard shortcuts:
 
-- `Left`, move cursor left one character
-- `Right`, move cursor right one character
-- `CTRL-Left`, move cursor left one word
-- `CTRL-Right`, move cursor right one word
-- `Home`, move cursor start of line
-- `End`, move cursor end of line
-- `Delete`, delete character after cursor
-- `CTRL-Delete`, delete word after cursor
-- `Backspace/CTRL-H`, delete character before cursor
-- `CTRL-Backspace`, delete word before cursor
-- `CTRL-V/SHIFT-INS`, paste from clipboard
-- `CTRL-Z`, undo last change
+| Keyboard shortcut | Command                         |
+| ----------------- | ------------------------------- |
+| Left              | Move cursor left one character  |
+| Right             | Move cursor right one character |
+| CTRL-Left         | Move cursor left one word       |
+| CTRL-Right        | Move cursor right one word      |
+| Home              | Move cursor start of line       |
+| End               | Move cursor end of line         |
+| Delete            | Delete character after cursor   |
+| CTRL-Delete       | Delete word after cursor        |
+| Backspace/CTRL-H  | Delete character before cursor  |
+| CTRL-Backspace    | Delete word before cursor       |
+| CTRL-V/SHIFT-INS  | Paste from clipboard            |
+| CTRL-Z            | Undo last change                |
 
-UNIX commandline-style keyboard shortcuts (`^` is caret notation for control
-character):
+General UNIX commandline-style keyboard shortcuts (^ is caret notation for
+control character):
 
-- `^A`, move cursor to start of line
-- `^E`, move cursor to end of line
-- `^U`, delete to beginning of line
-- `^K`, delete to end of line
-- `^D`, delete character after cursor
-- `^C`, clear field, this operation cannot be undone
-- `ALT-D`, delete word after cursor
-- `Backspace/^H`, delete character before cursor
-- `ALT-Backspace`/`ALT-^H`, delete word before cursor
-- `^W`, delete previous "large word"
-- `^B`, move cursor left one character
-- `ALT-B`, move cursor left one word
-- `^F`, move cursor right one character
-- `ALT-F`, move cursor right one word
-- `ALT-F`, move cursor right one word
-- `^T`, transpose characters
-- `ALT-T`, transpose words
-- `^_`, undo last change
-- `^Y`, yank from kill ring
-- `ALT-Y`, rotate kill ring
+| Keyboard shortcut    | Command                                      |
+| -------------------- | -------------------------------------------- |
+| ^A                   | Move cursor to start of line                 |
+| ^E                   | Move cursor to end of line                   |
+| ^U                   | Delete to beginning of line                  |
+| ^K                   | Delete to end of line                        |
+| ^D                   | Delete character after cursor                |
+| ^C                   | Clear field, this operation cannot be undone |
+| ALT-D                | Delete word after cursor                     |
+| Backspace/^H         | Delete character before cursor               |
+| ALT-Backspace/ALT-^H | Delete word before cursor                    |
+| ^W                   | Delete previous "large word"                 |
+| ^B                   | Move cursor left one character               |
+| ALT-B                | Move cursor left one word                    |
+| ^F                   | Move cursor right one character              |
+| ALT-F                | Move cursor right one word                   |
+| ALT-F                | Move cursor right one word                   |
+| ^T                   | Transpose characters                         |
+| ALT-T                | Transpose words                              |
+| ^\_                  | Undo last change                             |
+| ^Y                   | Yank from kill ring                          |
+| ALT-Y                | Rotate kill ring                             |
 
 ### Complete list of console specific shortcuts
 
 Console specific GUI-style keyboard shortcuts:
 
-- `Up`, go to back in command in history
-- `Down`, go to forward in command in history
-- `CTRL-PgUp`, scroll up one line
-- `CTRL-PgDn`, scroll down one line
-- `CTRL-Home`, scroll to first line
-- `CTRL-End`, scroll to last line
-- `ALT-P`/`ALT-Left`, previous console tab
-- `ALT-N`/`ALT-Right`, next console tab
-- `ALT-`*`Digit`*, console tab number *`Digit`*
+| Keyboard shortcut | Command                             |
+| ----------------- | ----------------------------------- |
+| Up                | go to back in command in history    |
+| Down              | go to forward in command in history |
+| PgUp              | scroll up one line                  |
+| PgDn              | scroll down one line                |
+| CTRL-Home         | scroll to first line                |
+| CTRL-End          | scroll to last line                 |
+| ALT-P/ALT-Left    | previous console tab                |
+| ALT-N/ALT-Right   | next console tab                    |
+| ALT-*Digit*       | console tab number *Digit*        |
 
 Console specific UNIX commandline-style keyboard shortcuts:
 
-- `^P`, go back in command in history
-- `^F`, go forward in command in history
-- `^L`, clear console screen
+| Keyboard shortcut | Command                           |
+| ----------------- | --------------------------------- |
+| ^P                |  go back in command in history    |
+| ^F                |  go forward in command in history |
+| ^L                |  clear console screen             |
 
 Improved line editing in tty-console
 ------------------------------------
