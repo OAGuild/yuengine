@@ -1,9 +1,41 @@
 Yu Engine for OpenArena
 =======================
 
-Engine forked from ioquake3 for use with OpenArena.  By default it will connect
-use the OpenArena master server and use OpenArenas protocol number, removing
-the need for a wrapper script like as is required with ioquake3.
+Yu Engine is an engine fork from ioquake3 for use with OpenArena.  By default
+it will connect to the OpenArenas servers.
+
+The reason this project was initially created was because the official
+OpenArena game-engine haven't backported security changes from ioquake3 which
+makes the engine insecure, and because its developers don't want to accept
+features or bug-fixes that the author of this project wanted.  Yu Engine
+strives to be up to date with ioquake3 and implement features for increased
+convenience when playing OpenArena.  It includes many new commands and cvars
+which are documentated below.
+
+New features implemented in Yu Engine (compared to ioquake3) include the
+following:
+
+- New cvar `cl_scaleSensWithFov` to automatically adjust mouse sensitivity as
+  FOV changes to preserve the same mouse feel
+- New command `reply` to reply to the most recent private message
+- New command `cmdmode` (like `messagemode`) for quickly entering console
+  commands
+- New command `replymode` (like `messagemode`) for quickly entering a reply
+  message
+- Override default font with internal one using cvar `r_useInternalFont`
+- Randomized GUID using cvar `cl_randomguid`
+- Hor+ FOV (correct implementation compared to the flawed implementation in the
+  official OpenArena engine)
+- Additional keyboard editing shortcuts for editing text fields
+- Improved line-editing in TTY console
+- Tabbed console with filtered messages
+
+Suggestions and bug reports are always welcome, please create issue at [the
+Github repo](https://github.com/oaguild/yuengine).  Security and network
+related things should generally be fixed in [the ioquake3 Github
+repo](https://github.com/ioquake3/ioq3) instead,  because it has maintainers
+more experienced with dealing with that kind of stuff.  All fixes made there
+will eventually be backported to Yu Engine (atleast that is the plan).
 
 Compilation instructions
 ------------------------
@@ -49,8 +81,8 @@ The one difference from `ioquake3` is that `BUILD_RENDERER_OPENGL2` and
 CFLAGS                 - use this for custom CFLAGS
 V                      - set to show cc command line when building
 DEFAULT_BASEDIR        - extra path to search for baseq3 and such
-BUILD_SERVER           - build the 'ioq3ded' server binary
-BUILD_CLIENT           - build the 'ioquake3' client binary
+BUILD_SERVER           - build the 'yuoaded' server binary
+BUILD_CLIENT           - build the 'yuoa' client binary
 BUILD_RENDERER_OPENGL2 - build opengl2 renderer
 BUILD_INTERNAL_FONT    - include the internal font in the renderer
 SERVERBIN              - rename 'yuoaded' server binary
@@ -67,9 +99,9 @@ USE_MUMBLE             - enable Mumble support
 USE_VOIP               - enable built-in VoIP support
 USE_FREETYPE           - enable FreeType support for rendering fonts
 USE_INTERNAL_LIBS      - build internal libraries instead of dynamically
-			 linking against system libraries; this just sets the
-			 default for
-USE_INTERNAL_ZLIB etc.  and USE_LOCAL_HEADERS
+                         linking against system libraries; this just sets
+                         the default for USE_INTERNAL_ZLIB etc.
+                         and USE_LOCAL_HEADERS
 USE_INTERNAL_ZLIB      - build and link against internal zlib
 USE_INTERNAL_JPEG      - build and link against internal JPEG library
 USE_INTERNAL_OGG       - build and link against internal ogg library
@@ -79,25 +111,6 @@ DEBUG_CFLAGS           - C compiler flags to use for building debug version
 COPYDIR                - the target installation directory
 TEMPDIR                - specify user defined directory for temp files
 ```
-
-Feature list
-------------
-
-New features implemented in Yu Engine are the following:
-
-- New cvar `cl_scaleSensWithFov` to automatically adjust mouse sensitivity as
-  FOV changes to preserve the same mouse feel
-- New command `reply` to reply to the most recent private message
-- New command `cmdmode` (like `messagemode`) for quickly entering console
-  commands
-- New command `replymode` (like `messagemode`) for quickly entering a reply
-  message
-- Override default font with internal one using cvar `r_useInternalFont`
-- Randomized GUID using cvar `cl_randomguid`
-- Hor+ FOV
-- Additional keyboard editing shortcuts for editing text fields
-- Improved line-editing in TTY console
-- Tabbed console with filtered messages
 
 Cvar `cl_scaleSensWithFov`
 --------------------------
