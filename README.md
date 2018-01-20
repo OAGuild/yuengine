@@ -214,7 +214,7 @@ General GUI-style keyboard shortcuts:
 | End               | Move cursor end of line         |
 | Delete            | Delete character after cursor   |
 | CTRL-Delete       | Delete word after cursor        |
-| Backspace, CTRL-H | Delete character before cursor  |
+| Backspace         | Delete character before cursor  |
 | CTRL-Backspace    | Delete word before cursor       |
 | CTRL-V, SHIFT-INS | Paste from clipboard            |
 | CTRL-Z            | Undo last change                |
@@ -262,8 +262,7 @@ Console specific keyboard shortcuts:
 
 ### Control key synonyms
 
-Because of the way input is handled, there are some synonym ways to trigger
-keyboard commands using CTRL.
+There are some synonym ways to trigger keyboard commands using CTRL.
 
 | Key    | Synonym for |
 | ------ | ----------- |
