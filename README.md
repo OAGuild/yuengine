@@ -267,10 +267,10 @@ keyboard commands using CTRL.
 
 | Key    | Synonym for |
 | ------ | ----------- |
-| CTRL-/ | CTRL-_      |
-| CTRL-7 | CTRL-_      |
 | CTRL-H | Backspace   |
 | CTRL-8 | Backspace   |
+| CTRL-/ | CTRL-_      |
+| CTRL-7 | CTRL-_      |
 
 Improved line editing in tty-console
 ------------------------------------
@@ -355,4 +355,4 @@ experienced with dealing with that kind of stuff.  All fixes made there will
 eventually be backported to Yu Engine (atleast that is the plan).
 
 [yuengine-repo]: https://github.com/oaguild/yuengine
-[ioq3-repo]: https://github.com/ioquake3/ioq3
+[ioq3-repo]: https://github.com/ioquake/ioq3
