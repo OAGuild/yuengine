@@ -32,8 +32,9 @@ Compilation instructions
   2. Run `make`.
 
 ### Building on Windows,
-  1. Please refer to [the ioquake build instructions]
-     (http://wiki.ioquake3.org/Building_ioquake3).
+  1. Please refer to [the build instructions on ioquake3 website][ioq3-build].
+
+[ioq3-build]: http://wiki.ioquake3.org/Building_ioquake3
 
 ### Building on Mac OS X
   1. Install MacOSX SDK packages from XCode.  For maximum compatibility,
