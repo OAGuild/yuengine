@@ -214,34 +214,34 @@ General GUI-style keyboard shortcuts:
 | End               | Move cursor end of line         |
 | Delete            | Delete character after cursor   |
 | CTRL-Delete       | Delete word after cursor        |
-| Backspace/CTRL-H  | Delete character before cursor  |
+| Backspace, CTRL-H | Delete character before cursor  |
 | CTRL-Backspace    | Delete word before cursor       |
-| CTRL-V/SHIFT-INS  | Paste from clipboard            |
+| CTRL-V, SHIFT-INS | Paste from clipboard            |
 | CTRL-Z            | Undo last change                |
 
 General UNIX commandline-style keyboard shortcuts:
 
-| Keyboard shortcut    | Command                                      |
-| -------------------- | -------------------------------------------- |
-| CTRL-A               | Move cursor to start of line                 |
-| CTRL-E               | Move cursor to end of line                   |
-| CTRL-U               | Delete to beginning of line                  |
-| CTRL-K               | Delete to end of line                        |
-| CTRL-D               | Delete character after cursor                |
-| CTRL-C               | Clear field, this operation cannot be undone |
-| ALT-D                | Delete word after cursor                     |
-| Backspace/^H         | Delete character before cursor               |
-| ALT-Backspace/ALT-^H | Delete word before cursor                    |
-| CTRL-W               | Delete previous "large word"                 |
-| CTRL-B               | Move cursor left one character               |
-| ALT-B                | Move cursor left one word                    |
-| CTRL-F               | Move cursor right one character              |
-| ALT-F                | Move cursor right one word                   |
-| CTRL-T               | Transpose characters                         |
-| ALT-T                | Transpose words                              |
-| CTRL-\_              | Undo last change                             |
-| CTRL-Y               | Yank from kill ring                          |
-| ALT-Y                | Rotate kill ring                             |
+| Keyboard shortcut | Command                                      |
+| ----------------- | -------------------------------------------- |
+| CTRL-A            | Move cursor to start of line                 |
+| CTRL-E            | Move cursor to end of line                   |
+| CTRL-U            | Delete to beginning of line                  |
+| CTRL-K            | Delete to end of line                        |
+| CTRL-D            | Delete character after cursor                |
+| CTRL-C            | Clear field, this operation cannot be undone |
+| ALT-D             | Delete word after cursor                     |
+| Backspace         | Delete character before cursor               |
+| ALT-Backspace     | Delete word before cursor                    |
+| CTRL-W            | Delete previous "large word"                 |
+| CTRL-B            | Move cursor left one character               |
+| ALT-B             | Move cursor left one word                    |
+| CTRL-F            | Move cursor right one character              |
+| ALT-F             | Move cursor right one word                   |
+| CTRL-T            | Transpose characters                         |
+| ALT-T             | Transpose words                              |
+| CTRL-\_           | Undo last change                             |
+| CTRL-Y            | Yank from kill ring                          |
+| ALT-Y             | Rotate kill ring                             |
 
 ### Complete list of console specific shortcuts
 
@@ -256,9 +256,21 @@ Console specific keyboard shortcuts:
 | Up, CTRL-P        | Go back in command in history    |
 | Down, CTRL-F      | Go forward in command in history |
 | CTRL-L            | Clear console screen             |
-| ALT-P/ALT-Left    | Previous console tab             |
-| ALT-N/ALT-Right   | Next console tab                 |
+| ALT-P, ALT-Left   | Previous console tab             |
+| ALT-N, ALT-Right  | Next console tab                 |
 | ALT-*Digit*       | Console tab number *Digit*       |
+
+### Control key synonyms
+
+Because of the way input is handled, there are some synonym ways to trigger
+keyboard commands using CTRL.
+
+| Key    | Synonym for |
+| ------ | ----------- |
+| CTRL-/ | CTRL-_      |
+| CTRL-7 | CTRL-_      |
+| CTRL-H | Backspace   |
+| CTRL-8 | Backspace   |
 
 Improved line editing in tty-console
 ------------------------------------
@@ -280,7 +292,8 @@ console.  Most terminal emulators can be configured to make `ALT` send
 Tabbed console with filtered messages
 -------------------------------------
 
-A very convenient feature originally implemented in L0neStarr's fx3-engine.
+A very convenient feature originally implemented in L0neStarr's f0cus-engine
+(fx3).
 
 When opening the console, there are 5 tabs at the bottom (named `all`, `sys`,
 `chat`, `tchat`, and `tell`).  You can change console tabs using the shortcuts
