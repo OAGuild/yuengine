@@ -20,17 +20,9 @@ following:
 - Override default font with internal one using cvar `r_useInternalFont`
 - Randomized GUID using cvar `cl_randomguid`
 - Hor+ FOV
-  official OpenArena engine)
 - Additional keyboard editing shortcuts for editing text fields
 - Improved line-editing in TTY console
 - Tabbed console with filtered messages
-
-Suggestions and bug reports are always welcome, please create issue at [the
-Github repo](https://github.com/oaguild/yuengine).  Security and network
-related things should generally be fixed in [the ioquake3 Github
-repo](https://github.com/ioquake3/ioq3) instead,  because it has maintainers
-more experienced with dealing with that kind of stuff.  All fixes made there
-will eventually be backported to Yu Engine (atleast that is the plan).
 
 Compilation instructions
 ------------------------
@@ -254,18 +246,18 @@ General UNIX commandline-style keyboard shortcuts:
 
 Console specific keyboard shortcuts:
 
-| Keyboard shortcut | Command                             |
-| ----------------- | ----------------------------------- |
-| PgUp              | Scroll up one line                  |
-| PgDn              | Scroll down one line                |
-| CTRL-Home         | Scroll to first line                |
-| CTRL-End          | Scroll to last line                 |
-| Up, CTRL-P        | Go back in command in history       |
-| Down, CTRL-F      | Go forward in command in history    |
-| CTRL-L            | Clear console screen                |
-| ALT-P/ALT-Left    | Previous console tab                |
-| ALT-N/ALT-Right   | Next console tab                    |
-| ALT-*Digit*       | Console tab number *Digit*          |
+| Keyboard shortcut | Command                          |
+| ----------------- | -------------------------------- |
+| PgUp              | Scroll up one line               |
+| PgDn              | Scroll down one line             |
+| CTRL-Home         | Scroll to first line             |
+| CTRL-End          | Scroll to last line              |
+| Up, CTRL-P        | Go back in command in history    |
+| Down, CTRL-F      | Go forward in command in history |
+| CTRL-L            | Clear console screen             |
+| ALT-P/ALT-Left    | Previous console tab             |
+| ALT-N/ALT-Right   | Next console tab                 |
+| ALT-*Digit*       | Console tab number *Digit*       |
 
 Improved line editing in tty-console
 ------------------------------------
@@ -328,3 +320,25 @@ The `condump`-command takes an optional parameter specifying which console to
 dump text from.  The parameter can be the index (starting at 0) of the console,
 or the name of the console.  If this optional parameter is omitted, then the
 `all` console is assumed.
+
+Other documentation
+-------------------
+
+This README only documents the features added by Yu Engine.  Not the features
+added by ioquake3.  See [the ioquake3 README](./ioq3-readme.md) for
+documentation about features added ioquake3.  Note that all things related to
+gamecode, UI and autoupdater have been removed from the source tree, so
+documentation about those should be ignored.
+
+Contributing
+------------
+
+Suggestions and bug reports are always welcome, please create issue at [the
+Github repo][yuengine-repo].  Pull-requests are also welcome, but might not be
+accepted.  Security and network related things should generally be fixed in
+[the ioquake3 Github repo][ioq3-repo] instead,  because it has maintainers more
+experienced with dealing with that kind of stuff.  All fixes made there will
+eventually be backported to Yu Engine (atleast that is the plan).
+
+[yuengine-repo]: https://github.com/oaguild/yuengine
+[ioq3-repo]: https://github.com/ioquake3/ioq3
