@@ -102,8 +102,26 @@ COPYDIR                - the target installation directory
 TEMPDIR                - specify user defined directory for temp files
 ```
 
-Cvar `cl_scaleSensWithFov`
---------------------------
+New cvars
+---------
+
+### Cvar `cl_randomguid`
+
+In OpenArena each player have a special value called "guid" used for
+identification.   It is a 128-bit number printed in hexadecimal and can be is
+available through the readonly cvar `cl_guid`.  The number is usually generated
+by creating an md5 hash from the special file called `qkey` in your
+`fs_homepath` folder.  This is used for server admins to identify a specific
+player, which is useful when a specific player should have access to special
+commands on the server.
+
+Some people want to play completely anonymously, and then GUID will reveal
+their identity.  By setting the cvar `cl_randomguid` to a non-zero value, a new
+GUID will be generated before each connection to a server.  Note this is not
+enough to be completely anonymous, playing behind a VPN or proxy server is also
+required.
+
+### Cvar `cl_scaleSensWithFov`
 
 This cvar was added because the gamecode used in Quake3 and OpenArena
 calculates the zoom sensitivity with an incorrect formula.  This can cause aim
@@ -117,8 +135,7 @@ increases or decreases as the FOV changes.
 
 Default value for `cl_scaleSensWithFov` is `0`.
 
-Cvar `r_useInternalFont`
----------------------------------
+### Cvar `r_useInternalFont`
 
 The default OA font used for the console and some in-game text doesn't look
 very good.
@@ -137,47 +154,30 @@ considering that the opengl1 renderer is over 3.5 MB without the included font.
 But if you don't want to use this feature, you can disable the build option and
 save some memory.
 
-Cvar `cl_randomguid`
---------------------
+New commands
+------------
 
-In OpenArena each player have a special value called "guid" used for
-identification.   It is a 128-bit number printed in hexadecimal and can be is
-available through the readonly cvar `cl_guid`.  The number is usually generated
-by creating an md5 hash from the special file called `qkey` in your
-`fs_homepath` folder.  This is used for server admins to identify a specific
-player, which is useful when a specific player should have access to special
-commands on the server.
+### Command `cmdmode`
 
-Some people want to play completely anonymously, and then GUID will reveal
-their identity.  By setting the cvar `cl_randomguid` to a non-zero value, a new
-GUID will be generated before each connection to a server.  Note this is not
-enough to be completely anonymous, playing behind a VPN or proxy server is also
-required.
+Works like `messagemode`.  When this command is entered a `]`-prompt shows up
+in the top left.  Then the user can enter a command that will be executed when
+`Enter` is pressed.  When in this mode the user has access to the editing
+commands that are available in the normal console.
 
-Command `reply`
------------------
+### Command `reply`
 
 Used to quickly reply to a received private message.  Works like `tell` but the
 target client is the client who send the last private message to your client.
 Reply will not reply to players who don't have unique names (to avoid problems
 caused from impersonation).
 
-Command `replymode`
------------------
+### Command `replymode`
 
 Works like `messagemode`.  Used to quickly reply to a message without using the
 console.  When this command is entered a `tell: `-prompt shows up in the top
 left, with the target being the last client who sent private message to your
 client.  The text entered will be sent privately to the target client, as if
 the `tell` command was used.
-
-Command `cmdmode`
------------------
-
-Works like `messagemode`.  When this command is entered a `]`-prompt shows up
-in the top left.  Then the user can enter a command that will be executed when
-`Enter` is pressed.  When in this mode the user has access to the editing
-commands that are available in the normal console.
 
 Hor+ FOV
 --------
@@ -277,7 +277,8 @@ Improved line editing in tty-console
 When running ioquake3 or OpenArena it is also possible to enter commands
 through a tty-console.  This is especially useful for dedicated servers without
 an in-game console.  Previously the editing-functionality was limited to
-entering characters, and recalling previously entered commands in history.
+entering characters, backspacing, and recalling previously entered commands in
+history.
 
 This has been improved so the user has access to almost all keyboard commands
 that are available in the in-game console.  The commands not available are
