@@ -224,55 +224,46 @@ General GUI-style keyboard shortcuts:
 | CTRL-V/SHIFT-INS  | Paste from clipboard            |
 | CTRL-Z            | Undo last change                |
 
-General UNIX commandline-style keyboard shortcuts (^ is caret notation for
-control character):
+General UNIX commandline-style keyboard shortcuts:
 
 | Keyboard shortcut    | Command                                      |
 | -------------------- | -------------------------------------------- |
-| ^A                   | Move cursor to start of line                 |
-| ^E                   | Move cursor to end of line                   |
-| ^U                   | Delete to beginning of line                  |
-| ^K                   | Delete to end of line                        |
-| ^D                   | Delete character after cursor                |
-| ^C                   | Clear field, this operation cannot be undone |
+| CTRL-A               | Move cursor to start of line                 |
+| CTRL-E               | Move cursor to end of line                   |
+| CTRL-U               | Delete to beginning of line                  |
+| CTRL-K               | Delete to end of line                        |
+| CTRL-D               | Delete character after cursor                |
+| CTRL-C               | Clear field, this operation cannot be undone |
 | ALT-D                | Delete word after cursor                     |
 | Backspace/^H         | Delete character before cursor               |
 | ALT-Backspace/ALT-^H | Delete word before cursor                    |
-| ^W                   | Delete previous "large word"                 |
-| ^B                   | Move cursor left one character               |
+| CTRL-W               | Delete previous "large word"                 |
+| CTRL-B               | Move cursor left one character               |
 | ALT-B                | Move cursor left one word                    |
-| ^F                   | Move cursor right one character              |
+| CTRL-F               | Move cursor right one character              |
 | ALT-F                | Move cursor right one word                   |
-| ALT-F                | Move cursor right one word                   |
-| ^T                   | Transpose characters                         |
+| CTRL-T               | Transpose characters                         |
 | ALT-T                | Transpose words                              |
-| ^\_                  | Undo last change                             |
-| ^Y                   | Yank from kill ring                          |
+| CTRL-\_              | Undo last change                             |
+| CTRL-Y               | Yank from kill ring                          |
 | ALT-Y                | Rotate kill ring                             |
 
 ### Complete list of console specific shortcuts
 
-Console specific GUI-style keyboard shortcuts:
+Console specific keyboard shortcuts:
 
 | Keyboard shortcut | Command                             |
 | ----------------- | ----------------------------------- |
-| Up                | Go to back in command in history    |
-| Down              | Go to forward in command in history |
 | PgUp              | Scroll up one line                  |
 | PgDn              | Scroll down one line                |
 | CTRL-Home         | Scroll to first line                |
 | CTRL-End          | Scroll to last line                 |
+| Up, CTRL-P        | Go back in command in history       |
+| Down, CTRL-F      | Go forward in command in history    |
+| CTRL-L            | Clear console screen                |
 | ALT-P/ALT-Left    | Previous console tab                |
 | ALT-N/ALT-Right   | Next console tab                    |
 | ALT-*Digit*       | Console tab number *Digit*          |
-
-Console specific UNIX commandline-style keyboard shortcuts:
-
-| Keyboard shortcut | Command                          |
-| ----------------- | -------------------------------- |
-| ^P                | Go back in command in history    |
-| ^F                | Go forward in command in history |
-| ^L                | Clear console screen             |
 
 Improved line editing in tty-console
 ------------------------------------
