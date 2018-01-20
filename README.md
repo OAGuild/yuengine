@@ -55,7 +55,9 @@ Compilation instructions
   1. Set the `COPYDIR` variable in the shell to be where you have the OpenArena
      gamecode files.  By default it will be `/usr/local/games/openarena` if you
      haven't set it.  Note that the OpenArena gamecode shipped with on Debian
-     GNU/Linux repositories does not work with yuengine.
+     GNU/Linux packages does not work with yuengine.  Instead you can download
+     the gamecode for OpenArena 0.8.8 from [the official OpenArena
+     website](http://openarena.ws/download.php) which has been tested to work.
   2. Run `make copyfiles`.
 
 It is also possible to cross compile for Windows under \*nix using MinGW. Your
