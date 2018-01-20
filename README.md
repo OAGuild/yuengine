@@ -10,15 +10,15 @@ below.
 New features implemented in Yu Engine (compared to ioquake3) include the
 following:
 
-- New cvar `cl_scaleSensWithFov` to automatically adjust mouse sensitivity as
+- Cvar `cl_scaleSensWithFov` to automatically adjust mouse sensitivity as
   FOV changes to preserve the same mouse feel
-- New command `reply` to reply to the most recent private message
-- New command `cmdmode` (like `messagemode`) for quickly entering console
-  commands
-- New command `replymode` (like `messagemode`) for quickly entering a reply
-  message
-- Override default font with internal one using cvar `r_useInternalFont`
 - Randomized GUID using cvar `cl_randomguid`
+- Override default font with internal one using cvar `r_useInternalFont`
+- Command `cmdmode` (like `messagemode`) for quickly entering console
+  commands
+- Command `reply` to reply to the most recent private message
+- Command `replymode` (like `messagemode`) for quickly entering a reply
+  message
 - Hor+ FOV
 - Additional keyboard editing shortcuts for editing text fields
 - Improved line-editing in TTY console
@@ -65,7 +65,8 @@ Build options
 The following variables may be set, either on the command line or in
 Makefile.local. The defaults of these differ depending on the target platform.
 The one difference from ioquake3 is that `BUILD_RENDERER_OPENGL2` and
-`USE_RENDERER_DLOPEN` is `0` (disabled) by default.
+`USE_RENDERER_DLOPEN` is `0` (disabled) by default.  `BUILD_INTERNAL_FONT` is a
+new option with default value `1` (enabled).
 
 ```
 CFLAGS                 - use this for custom CFLAGS
@@ -174,7 +175,7 @@ caused from impersonation).
 ### Command `replymode`
 
 Works like `messagemode`.  Used to quickly reply to a message without using the
-console.  When this command is entered a `tell: `-prompt shows up in the top
+console.  When this command is entered a `tell`-prompt shows up in the top
 left, with the target being the last client who sent private message to your
 client.  The text entered will be sent privately to the target client, as if
 the `tell` command was used.
@@ -262,7 +263,9 @@ Console specific keyboard shortcuts:
 
 ### Control key synonyms
 
-There are some synonym ways to trigger keyboard commands using CTRL.
+There are some synonym ways to trigger keyboard commands using CTRL (when using
+the game client).  These probably also available while running the dedicated
+server through a terminal emulator or console.
 
 | Key    | Synonym for |
 | ------ | ----------- |
