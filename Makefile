@@ -105,7 +105,7 @@ SERVERBIN=yuoaded
 endif
 
 ifndef COPYDIR
-COPYDIR="/usr/local/games/quake3"
+COPYDIR="/usr/local/games/openarena"
 endif
 
 ifndef COPYBINDIR
