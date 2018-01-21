@@ -647,7 +647,7 @@ CONSOLE LINE EDITING
 
 /*
 ====================
-Console_KeyDownEventEvent
+Console_KeyDownEvent
 
 Handles history and console scrollback
 ====================
@@ -677,7 +677,16 @@ void Console_KeyDownEvent (int key) {
 		}
 	}
 
-	// console tab switching
+	// console tab switching using numbers
+	if ( key >= '0' && key <= '9' && keys[K_ALT].down ) {
+		// console numbers start at one, last one is 10 (accessed through 0)
+		int n = key == '0' ? 10 : key - '1';
+
+		Con_SwitchConsoleTab( n );
+		return;
+	}
+
+	// console tab switching using arrows
 	if ( key == K_LEFTARROW && keys[K_ALT].down ) {
 		Con_PrevConsoleTab();
 		return;
@@ -759,18 +768,28 @@ void Console_CharEvent( int ch ) {
 
 	// tab completes command or switches console
 	if ( ch == '\t' ) {
+		if ( keys[K_CTRL].down ) {
+			if (keys[K_SHIFT].down)
+				Con_PrevConsoleTab();
+			else
+				Con_NextConsoleTab();
+			return;
+		}
+
 		// autocomplete only for non-chat consoles
 		if ( !CON_ISCHAT( activeCon - cons ) )
 			Field_AutoComplete( &g_consoleField );
 		return;
 	}
 
-	// switch console
+	// console tab switching
 	if ( ch >= '0' && ch <= '9' && keys[K_ALT].down ) {
-		// console numbers start at one, last one is 10 (accessed through 0)
-		int n = ch == '0' ? 10 : ch - '1';
-
-		Con_SwitchConsoleTab( n );
+		// This is handled in Console_KeyDownEvent instead, reason for
+		// that is that keyboard commands using ALT will not generate
+		// Console_CharEvent events on Windows.  Making all
+		// ALT-bindings useless.  This one is especially useful, we
+		// create a workaround by moving it to Console_KeyDownEvent, to
+		// make it work on Windows.
 		return;
 	}
 
