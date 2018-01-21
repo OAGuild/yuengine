@@ -439,7 +439,7 @@ static void VertmToHorpFov( float *fov_x, float *fov_y, float aspect ) {
 
 	// Then we use the Hor+ vertical FOV to calculate our new
 	// expanded horizontal FOV
-	*fov_y = VfovToHfov( *fov_y, aspect );
+	*fov_x = VfovToHfov( *fov_y, aspect );
 }
 
 /*
@@ -610,7 +610,8 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 			// only do the following when rendering the world (not UI or HUD)
 			if ( ((fd->rdflags & RDF_NOWORLDMODEL) == 0) ) {
 				// convert Vert- to Hor+ FOV
-				VertmToHorpFov( &fd->fov_x, &fd->fov_y, fd->width/fd->height);
+				VertmToHorpFov( &fd->fov_x, &fd->fov_y, (float)fd->width /
+						fd->height );
 
 				// save the horizontal FOV
 				cl.cgameFovX = fd->fov_x;
