@@ -609,12 +609,12 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 
 			// only do the following when rendering the world (not UI or HUD)
 			if ( ((fd->rdflags & RDF_NOWORLDMODEL) == 0) ) {
+				// save the horizontal FOV
+				cl.cgameFovX = fd->fov_x;
+
 				// convert Vert- to Hor+ FOV
 				VertmToHorpFov( &fd->fov_x, &fd->fov_y, (float)fd->width /
 						fd->height );
-
-				// save the horizontal FOV
-				cl.cgameFovX = fd->fov_x;
 			}
 
 			re.RenderScene( fd );
