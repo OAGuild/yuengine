@@ -1156,16 +1156,30 @@ void Con_DrawSolidConsole( float frac ) {
 
 		if (&cons[x] == activeCon) {
 			SCR_FillRectNoAdjust(horOffset, vertOffset, tabWidth,
-					SMALLCHAR_HEIGHT,
-					g_color_table[conColors[x]]);
-			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH,
-					vertOffset, name, g_color_table[0],
-					qfalse, qtrue);
+					SMALLCHAR_HEIGHT, g_color_table[conColors[x]]);
+			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH, vertOffset,
+					name, g_color_table[0], qfalse, qtrue);
 		} else {
-			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH,
-					vertOffset, name,
-					g_color_table[conColors[x]], qfalse,
-					qtrue);
+			vec4_t color;
+			memcpy(color, g_color_table[conColors[x]], sizeof color);
+
+			int time = cons[x].times[0];
+
+			for (int i = 1; i < NUM_CON_TIMES; ++i) {
+				if (time < cons[x].times[i]) {
+					time = cons[x].times[i];
+				}
+			}
+
+			color[3] = (250 - (cls.realtime - time)) / 250.0;
+			if (color[3] < 0) {
+				color[3] = 0.0;
+			}
+
+			SCR_FillRectNoAdjust(horOffset, vertOffset, tabWidth,
+					SMALLCHAR_HEIGHT, color);
+			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH, vertOffset,
+					name, g_color_table[conColors[x]], qfalse, qtrue);
 		}
 		horOffset += tabWidth;
 	}
