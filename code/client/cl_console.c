@@ -192,7 +192,10 @@ void Con_AcceptLine( void )
 		}
 	}
 
-	Con_HistAdd( &g_consoleField );
+	// save history only for non-chat consoles
+	if (!isChat)
+		Con_HistAdd( &g_consoleField );
+
 	Field_Clear( &g_consoleField );
 
 	g_consoleField.widthInChars = g_console_field_width;
