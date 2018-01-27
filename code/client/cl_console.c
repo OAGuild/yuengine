@@ -528,6 +528,7 @@ void Con_ClearNotify( void ) {
 	for ( i = 0 ; i < NUM_CON ; i++ ) {
 		for ( j = 0 ; j < NUM_CON_TIMES ; j++ ) {
 			cons[i].times[j] = 0;
+			cons[i].lasttime = 0;
 		}
 	}
 }
@@ -713,10 +714,12 @@ void Con_Linefeed (console_t *con, qboolean skipnotify)
 	// mark time for transparent overlay
 	if (con->current >= 0)
 	{
-    if (skipnotify)
-		  con->times[con->current % NUM_CON_TIMES] = 0;
-    else
-		  con->times[con->current % NUM_CON_TIMES] = cls.realtime;
+		if (skipnotify)
+			con->times[con->current % NUM_CON_TIMES] = 0;
+		else {
+			con->times[con->current % NUM_CON_TIMES] = cls.realtime;
+			con->lasttime = cls.realtime;
+		}
 	}
 
 	con->x = 0;
@@ -1160,18 +1163,12 @@ void Con_DrawSolidConsole( float frac ) {
 			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH, vertOffset,
 					name, g_color_table[0], qfalse, qtrue);
 		} else {
+			// draw notify blinking
+
 			vec4_t color;
 			memcpy(color, g_color_table[conColors[x]], sizeof color);
 
-			int time = cons[x].times[0];
-
-			for (int i = 1; i < NUM_CON_TIMES; ++i) {
-				if (time < cons[x].times[i]) {
-					time = cons[x].times[i];
-				}
-			}
-
-			color[3] = (250 - (cls.realtime - time)) / 250.0;
+			color[3] = (250 - (cls.realtime - cons[x].lasttime)) / 250.0;
 			if (color[3] < 0) {
 				color[3] = 0.0;
 			}

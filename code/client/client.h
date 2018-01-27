@@ -73,7 +73,10 @@ typedef struct {
 	int		vislines;		// in scanlines
 
 	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
-								// for transparent notify lines
+									// for transparent notify lines
+	int		lasttime;		// the time of the last notification
+							// for console tab notify blink
+
 	vec4_t	color;
 } console_t;
 
