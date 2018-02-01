@@ -299,6 +299,9 @@ Con_MessageMode3_f
 ================
 */
 void Con_MessageMode3_f (void) {
+	if ( cgvm == NULL)
+		return;
+
 	chat_playerNum = VM_Call( cgvm, CG_CROSSHAIR_PLAYER );
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
@@ -316,6 +319,9 @@ Con_MessageMode4_f
 ================
 */
 void Con_MessageMode4_f (void) {
+	if ( cgvm == NULL)
+		return;
+
 	chat_playerNum = VM_Call( cgvm, CG_LAST_ATTACKER );
 	if ( chat_playerNum < 0 || chat_playerNum >= MAX_CLIENTS ) {
 		chat_playerNum = -1;
@@ -358,24 +364,71 @@ void Con_CmdMode_f (void) {
 
 /*
 ================
+Con_Say_Target_f
+================
+*/
+void Con_Say_Target_f (void) {
+	if ( cgvm == NULL)
+		return;
+
+	if ( Cmd_Argc() < 2 ) {
+		Com_Printf( "Usage: say_target <message>\n" );
+		return;
+	}
+
+	int clientNum = VM_Call( cgvm, CG_LAST_ATTACKER );
+
+	if ( clientNum < 0 || clientNum >= MAX_CLIENTS ) {
+		return;
+	}
+
+	char	buf[MAX_STRING_CHARS];
+	Com_sprintf( buf, sizeof buf, "tell %i \"%s\"\n", clientNum, Cmd_Args() );
+	CL_AddReliableCommand( buf, qfalse );
+}
+
+/*
+================
+Con_Say_Attacker_f
+================
+*/
+void Con_Say_Attacker_f (void) {
+	if ( Cmd_Argc() < 2 ) {
+		Com_Printf( "Usage: say_attacker <message>\n" );
+		return;
+	}
+
+	if ( cgvm == NULL)
+		return;
+
+	int clientNum = VM_Call( cgvm, CG_LAST_ATTACKER );
+
+	if ( clientNum < 0 || clientNum >= MAX_CLIENTS ) {
+		return;
+	}
+
+	char	buf[MAX_STRING_CHARS];
+	Com_sprintf( buf, sizeof buf, "tell %i \"%s\"\n", clientNum, Cmd_Args() );
+	CL_AddReliableCommand( buf, qfalse );
+}
+
+/*
+================
 Con_Reply_f
 ================
 */
 void Con_Reply_f (void) {
-	char	buf[MAX_STRING_CHARS];
-
 	if ( Cmd_Argc() < 2 ) {
 		Com_Printf( "Usage: reply <message>\n" );
 		return;
 	}
 
 	if ( tellClientNum < 0 ) {
-		Com_Printf( "Nobody to reply to!\n" );
 		return;
 	}
 
+	char	buf[MAX_STRING_CHARS];
 	Com_sprintf( buf, sizeof buf, "tell %i \"%s\"\n", tellClientNum, Cmd_Args() );
-
 	CL_AddReliableCommand( buf, qfalse );
 }
 
@@ -679,6 +732,8 @@ void Con_Init (void) {
 	Cmd_AddCommand ("messagemode4", Con_MessageMode4_f);
 	Cmd_AddCommand ("replymode", Con_ReplyMode_f);
 	Cmd_AddCommand ("cmdmode", Con_CmdMode_f);
+	Cmd_AddCommand ("say_target", Con_Say_Target_f);
+	Cmd_AddCommand ("say_attacker", Con_Say_Attacker_f);
 	Cmd_AddCommand ("reply", Con_Reply_f);
 	Cmd_AddCommand ("clear", Con_Clear_f);
 	Cmd_AddCommand ("condump", Con_Dump_f);

@@ -127,7 +127,7 @@ required.
 
 ### Cvar `cl_scaleSensWithFov`
 
-This cvar was added because the gamecode used in Quake3 and OpenArena
+This cvar was added because the gamecode used in Quake III and OpenArena
 calculates the zoom sensitivity with an incorrect formula.  This can cause aim
 to be a bit inconsistent if you aren't used to it already.
 
@@ -167,6 +167,13 @@ Works like `messagemode`.  When this command is entered a `]`-prompt shows up
 in the top left.  Then the user can enter a command that will be executed when
 `Enter` is pressed.  When in this mode the user has access to the editing
 commands that are available in the normal console.
+
+### Command `say_target` and `say_attacker`
+
+`say_target` works like the `say` command but will only write to the target
+player in front of the cross-hair.  `say_attacker` also works in the same way
+but will write only to the player who previously attacked your player.  These
+commands are the console-only equivalent to `messagemode3` and `messagemode4`.
 
 ### Command `reply`
 
