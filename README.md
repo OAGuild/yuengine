@@ -16,6 +16,7 @@ following:
 - Override default font with internal one using cvar `r_useInternalFont`
 - Command `cmdmode` (like `messagemode`) for quickly entering console
   commands
+- Commands `say_target` and `say_attacker` to write to players in-game
 - Command `reply` to reply to the most recent private message
 - Command `replymode` (like `messagemode`) for quickly entering a reply
   message
@@ -168,7 +169,7 @@ in the top left.  Then the user can enter a command that will be executed when
 `Enter` is pressed.  When in this mode the user has access to the editing
 commands that are available in the normal console.
 
-### Command `say_target` and `say_attacker`
+### Commands `say_target` and `say_attacker`
 
 `say_target` works like the `say` command but will only write to the target
 player in front of the cross-hair.  `say_attacker` also works in the same way
