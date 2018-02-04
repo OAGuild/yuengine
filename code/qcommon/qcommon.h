@@ -773,6 +773,7 @@ typedef struct {
 	int		scroll;
 	int		widthInChars;
 	char	buffer[MAX_EDIT_LINE];
+	int		selStart;
 	undobuf_t	*undobuf;
 	yankbuf_t	*yankbuf;
 } field_t;

@@ -416,11 +416,34 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 
 void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
+	int selStart, selLen;
+	if ( edit->cursor < edit->selStart ) {
+		selStart = edit->cursor;
+		selLen = edit->selStart - edit->cursor;
+	} else {
+		selStart = edit->selStart;
+		selLen = edit->cursor - edit->selStart;
+	}
+
+	SCR_FillRect( x + selStart * SMALLCHAR_WIDTH, y, selLen * SMALLCHAR_WIDTH,
+			SMALLCHAR_HEIGHT, g_color_table[4] );
+
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
 }
 
 void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
+	int selStart, selLen;
+	if ( edit->cursor < edit->selStart ) {
+		selStart = edit->cursor;
+		selLen = edit->selStart - edit->cursor;
+	} else {
+		selStart = edit->selStart;
+		selLen = edit->cursor - edit->selStart;
+	}
+
+	SCR_FillRect( x + selStart * BIGCHAR_WIDTH, y, selLen * BIGCHAR_WIDTH,
+			BIGCHAR_HEIGHT, g_color_table[4] );
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
 }
 

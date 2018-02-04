@@ -1103,7 +1103,7 @@ void Con_DrawNotify (console_t *con)
 			skip = 0;
 		}
 		Field_BigDraw( &chatField, 8 + skip * BIGCHAR_WIDTH, v,
-			SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
+				SCREEN_WIDTH - ( skip + 1 ) * BIGCHAR_WIDTH, qtrue, qtrue );
 	}
 }
 
