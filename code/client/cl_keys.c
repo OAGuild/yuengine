@@ -416,34 +416,39 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 
 void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
-	int selStart, selLen;
-	if ( edit->cursor < edit->selStart ) {
-		selStart = edit->cursor;
-		selLen = edit->selStart - edit->cursor;
-	} else {
-		selStart = edit->selStart;
-		selLen = edit->cursor - edit->selStart;
+	// highlight selection
+	if ( edit->selStart != -1 ) {
+		int selStart, selLen;
+		if ( edit->cursor < edit->selStart ) {
+			selStart = edit->cursor;
+			selLen = edit->selStart - edit->cursor;
+		} else {
+			selStart = edit->selStart;
+			selLen = edit->cursor - edit->selStart;
+		}
+		SCR_FillRectNoAdjust( x + selStart * SMALLCHAR_WIDTH, y, selLen *
+				SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, g_color_table[4] );
 	}
-
-	SCR_FillRect( x + selStart * SMALLCHAR_WIDTH, y, selLen * SMALLCHAR_WIDTH,
-			SMALLCHAR_HEIGHT, g_color_table[4] );
 
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
 }
 
 void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
-	int selStart, selLen;
-	if ( edit->cursor < edit->selStart ) {
-		selStart = edit->cursor;
-		selLen = edit->selStart - edit->cursor;
-	} else {
-		selStart = edit->selStart;
-		selLen = edit->cursor - edit->selStart;
+	// highlight selection
+	if ( edit->selStart != -1 ) {
+		int selStart, selLen;
+		if ( edit->cursor < edit->selStart ) {
+			selStart = edit->cursor;
+			selLen = edit->selStart - edit->cursor;
+		} else {
+			selStart = edit->selStart;
+			selLen = edit->cursor - edit->selStart;
+		}
+		SCR_FillRect( x + selStart * BIGCHAR_WIDTH, y, selLen * BIGCHAR_WIDTH,
+				BIGCHAR_HEIGHT, g_color_table[4] );
 	}
 
-	SCR_FillRect( x + selStart * BIGCHAR_WIDTH, y, selLen * BIGCHAR_WIDTH,
-			BIGCHAR_HEIGHT, g_color_table[4] );
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
 }
 
@@ -479,6 +484,9 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 			break;
 
 		case K_RIGHTARROW:
+			if ( !keys[K_SHIFT].down ) {
+				Field_SelectionEnd( edit );
+			}
 			if ( keys[K_CTRL].down ) {
 				Field_MoveForwardWord( edit );
 			} else {
@@ -487,6 +495,9 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 			break;
 
 		case K_LEFTARROW:
+			if ( !keys[K_SHIFT].down ) {
+				Field_SelectionEnd( edit );
+			}
 			if ( keys[K_CTRL].down ) {
 				Field_MoveBackWord( edit );
 			} else {
@@ -495,11 +506,21 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 			break;
 
 		case K_HOME:
+			if ( !keys[K_SHIFT].down ) {
+				Field_SelectionEnd( edit );
+			}
 			Field_MoveLineStart( edit );
 			break;
 
 		case K_END:
+			if ( !keys[K_SHIFT].down ) {
+				Field_SelectionEnd( edit );
+			}
 			Field_MoveLineEnd( edit );
+			break;
+
+		case K_SHIFT:
+			Field_SelectionStart( edit );
 			break;
 
 		case K_INS:
@@ -587,16 +608,25 @@ void Field_CharEvent( field_t *edit, int ch ) {
 
 	if ( tolower( ch ) == 'f' && keys[K_ALT].down ) {
 		// alt-f moves to next word
+		if ( !keys[K_SHIFT].down ) {
+			Field_SelectionEnd( edit );
+		}
 		Field_MoveForwardWord( edit );
 		return;
 	}
 
 	if ( ch == CTRL( 'B' ) ) {	// ^B moves to previous char
+		if ( !keys[K_SHIFT].down ) {
+			Field_SelectionEnd( edit );
+		}
 		Field_MoveBackChar( edit );
 		return;
 	}
 
 	if ( tolower( ch ) == 'b' && keys[K_ALT].down ) {
+		if ( !keys[K_SHIFT].down ) {
+			Field_SelectionEnd( edit );
+		}
 		// alt-b moves to previous word
 		Field_MoveBackWord( edit );
 		return;
@@ -639,11 +669,17 @@ void Field_CharEvent( field_t *edit, int ch ) {
 	}
 
 	if ( ch == CTRL( 'A' ) ) {	// ^A is home
+		if ( !keys[K_SHIFT].down ) {
+			Field_SelectionEnd( edit );
+		}
 		Field_MoveLineStart( edit );
 		return;
 	}
 
 	if ( ch == CTRL( 'E' ) ) {	// ^E is end
+		if ( !keys[K_SHIFT].down ) {
+			Field_SelectionEnd( edit );
+		}
 		Field_MoveLineEnd( edit );
 		return;
 	}

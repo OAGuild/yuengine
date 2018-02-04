@@ -817,6 +817,12 @@ void Field_MakeWordCapitalized( field_t *edit );
 void Field_InsertChar( field_t *edit, char ch );
 void Field_ReplaceChar( field_t *edit, char ch );
 
+void Field_SelectionStart( field_t *edit );
+void Field_SelectionEnd( field_t *edit );
+void Field_SelectionCopy( field_t *edit );
+void Field_SelectionCut( field_t *edit );
+void Field_SelectionDelete( field_t *edit );
+
 /*
 ==============================================================
 

@@ -264,6 +264,7 @@ Field_Clear
 */
 void Field_Clear( field_t *edit ) {
 	memset(edit->buffer, 0, MAX_EDIT_LINE);
+	edit->selStart = -1;
 	edit->cursor = 0;
 	edit->scroll = 0;
 	if (edit->undobuf)
@@ -793,6 +794,8 @@ void Field_ClipboardPaste( field_t *edit ) {
 	}
 
 	PushUndo( edit, UNDO_CLIPBOARD_PASTE );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
 
 	// send as if typed, so insert / overstrike works properly
 	pasteLen = strlen( cbd );
@@ -806,37 +809,55 @@ void Field_ClipboardPaste( field_t *edit ) {
 void Field_RuboutChar( field_t *edit )
 {
 	PushUndo( edit, UNDO_RUBOUT_CHAR );
-	DeleteTo( edit, edit->cursor - 1 );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		DeleteTo( edit, edit->cursor - 1 );
 }
 
 void Field_RuboutWord( field_t *edit )
 {
 	PushUndo( edit, UNDO_RUBOUT_WORD );
-	KillTo( edit, BackWord( edit ) );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		KillTo( edit, BackWord( edit ) );
 }
 
 void Field_RuboutLongWord( field_t *edit )
 {
 	PushUndo( edit, UNDO_RUBOUT_LONG_WORD );
-	KillTo( edit, BackLongWord( edit ) );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		KillTo( edit, BackLongWord( edit ) );
 }
 
 void Field_RuboutLine( field_t *edit )
 {
 	PushUndo( edit, UNDO_RUBOUT_LINE );
-	KillTo( edit, 0 );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		KillTo( edit, 0 );
 }
 
 void Field_DeleteChar( field_t *edit )
 {
 	PushUndo( edit, UNDO_DELETE_CHAR );
-	DeleteTo( edit, edit->cursor + 1 );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		DeleteTo( edit, edit->cursor + 1 );
 }
 
 void Field_DeleteWord( field_t *edit )
 {
 	PushUndo( edit, UNDO_DELETE_WORD );
-	KillTo( edit, ForwardWord( edit ) );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		KillTo( edit, ForwardWord( edit ) );
 }
 
 void Field_DeleteLine( field_t *edit )
@@ -847,7 +868,10 @@ void Field_DeleteLine( field_t *edit )
 			return;
 
 	PushUndo( edit, UNDO_DELETE_LINE );
-	KillTo( edit, len );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
+	else
+		KillTo( edit, len );
 }
 
 
@@ -994,11 +1018,45 @@ void Field_MakeWordCapitalized( field_t *edit )
 void Field_InsertChar( field_t *edit, char ch )
 {
 	PushUndo( edit, UNDO_INSERT_CHAR );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
 	InsertChar( edit, ch );
 }
 
 void Field_ReplaceChar( field_t *edit, char ch )
 {
 	PushUndo( edit, UNDO_REPLACE_CHAR );
+	if ( edit->selStart != -1 )
+		Field_SelectionDelete( edit );
 	ReplaceChar( edit, ch );
+}
+
+void Field_SelectionStart( field_t *edit )
+{
+	if ( edit->selStart == -1 ) {
+		edit->selStart = edit->cursor;
+	}
+}
+
+void Field_SelectionEnd( field_t *edit )
+{
+	edit->selStart = -1;
+}
+
+void Field_SelectionDelete( field_t *edit )
+{
+	if ( edit->selStart != -1 )
+		KillTo( edit, edit->selStart );
+	Field_SelectionEnd( edit );
+}
+
+void Field_SelectionCut( field_t *edit )
+{
+	if ( edit->selStart != -1 )
+		KillTo( edit, edit->selStart );
+	Field_SelectionEnd( edit );
+}
+
+void Field_SelectionCopy( field_t *edit )
+{
 }
