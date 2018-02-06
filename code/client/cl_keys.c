@@ -382,9 +382,38 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 	if ( size == SMALLCHAR_WIDTH ) {
 		float	color[4];
 
+		// highlight selection
+		if ( edit->selStart != -1 ) {
+			int selStart, selLen;
+			if ( edit->cursor < edit->selStart ) {
+				selStart = edit->cursor;
+				selLen = edit->selStart - edit->cursor;
+			} else {
+				selStart = edit->selStart;
+				selLen = edit->cursor - edit->selStart;
+			}
+			SCR_FillRectNoAdjust( x + (selStart - prestep) * SMALLCHAR_WIDTH,
+					y, selLen * SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
+					g_color_table[4] );
+		}
+
 		color[0] = color[1] = color[2] = color[3] = 1.0;
 		SCR_DrawSmallStringExt( x, y, str, color, qfalse, noColorEscape );
 	} else {
+		// highlight selection
+		if ( edit->selStart != -1 ) {
+			int selStart, selLen;
+			if ( edit->cursor < edit->selStart ) {
+				selStart = edit->cursor;
+				selLen = edit->selStart - edit->cursor;
+			} else {
+				selStart = edit->selStart;
+				selLen = edit->cursor - edit->selStart;
+			}
+			SCR_FillRect( x + (selStart - prestep) * BIGCHAR_WIDTH, y, selLen *
+					BIGCHAR_WIDTH, BIGCHAR_HEIGHT, g_color_table[4] );
+		}
+
 		// draw big string with drop shadow
 		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
 	}
@@ -416,39 +445,11 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 
 void Field_Draw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
-	// highlight selection
-	if ( edit->selStart != -1 ) {
-		int selStart, selLen;
-		if ( edit->cursor < edit->selStart ) {
-			selStart = edit->cursor;
-			selLen = edit->selStart - edit->cursor;
-		} else {
-			selStart = edit->selStart;
-			selLen = edit->cursor - edit->selStart;
-		}
-		SCR_FillRectNoAdjust( x + selStart * SMALLCHAR_WIDTH, y, selLen *
-				SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT, g_color_table[4] );
-	}
-
 	Field_VariableSizeDraw( edit, x, y, width, SMALLCHAR_WIDTH, showCursor, noColorEscape );
 }
 
 void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor, qboolean noColorEscape )
 {
-	// highlight selection
-	if ( edit->selStart != -1 ) {
-		int selStart, selLen;
-		if ( edit->cursor < edit->selStart ) {
-			selStart = edit->cursor;
-			selLen = edit->selStart - edit->cursor;
-		} else {
-			selStart = edit->selStart;
-			selLen = edit->cursor - edit->selStart;
-		}
-		SCR_FillRect( x + selStart * BIGCHAR_WIDTH, y, selLen * BIGCHAR_WIDTH,
-				BIGCHAR_HEIGHT, g_color_table[4] );
-	}
-
 	Field_VariableSizeDraw( edit, x, y, width, BIGCHAR_WIDTH, showCursor, noColorEscape );
 }
 
