@@ -55,7 +55,20 @@ cvar_t		*con_conspeed;
 cvar_t		*con_autoclear;
 cvar_t		*con_notifytime;
 
-#define	DEFAULT_CONSOLE_WIDTH	78
+void HistToField( field_t *field, hist_t *hist ) {
+	field->cursor = hist->cursor;
+	field->scroll = hist->scroll;
+	field->widthInChars = g_console_field_width;
+	field->undobuf = &g_consoleUndobuf;
+	field->yankbuf = &yankbuf;
+	Q_strncpyz( field->buffer, hist->buffer, MAX_EDIT_LINE );
+}
+
+void FieldToHist( hist_t *hist, field_t *field ) {
+	hist->cursor = field->cursor;
+	hist->scroll = field->scroll;
+	Q_strncpyz( hist->buffer, field->buffer, MAX_EDIT_LINE );
+}
 
 /*
 ================
@@ -69,7 +82,7 @@ void Con_HistPrev( field_t *edit )
 	if ( nextHistoryLine - historyLine < COMMAND_HISTORY && historyLine > 0 ) {
 		historyLine--;
 	}
-	*edit = historyEditLines[ historyLine % COMMAND_HISTORY ];
+	HistToField( edit, &historyEditLines[ historyLine % COMMAND_HISTORY ] );
 }
 
 /*
@@ -89,7 +102,7 @@ void Con_HistNext( field_t *edit )
 		edit->widthInChars = width;
 		return;
 	}
-	*edit = historyEditLines[ historyLine % COMMAND_HISTORY ];
+	HistToField( edit, &historyEditLines[ historyLine % COMMAND_HISTORY ] );
 }
 
 /*
@@ -102,7 +115,7 @@ Add line to history
 void Con_HistAdd( field_t *edit )
 {
 	// copy line to history buffer
-	historyEditLines[nextHistoryLine % COMMAND_HISTORY] = *edit;
+	FieldToHist( &historyEditLines[nextHistoryLine % COMMAND_HISTORY], edit );
 	nextHistoryLine++;
 	historyLine = nextHistoryLine;
 }
@@ -646,7 +659,7 @@ static void Con_CheckResize (console_t *con)
 
 	if (width < 1)			// video hasn't been initialized yet
 	{
-		width = DEFAULT_CONSOLE_WIDTH;
+		width = g_console_field_width;
 		con->linewidth = width;
 		con->totallines = CON_TEXTSIZE / con->linewidth;
 		for(i=0; i<CON_TEXTSIZE; i++)
@@ -703,7 +716,6 @@ void Cmd_CompleteTxtName( char *args, int argNum ) {
 	}
 }
 
-
 /*
 ================
 Con_Init
@@ -719,8 +731,7 @@ void Con_Init (void) {
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
 	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
-		Field_Clear( &historyEditLines[i] );
-		historyEditLines[i].widthInChars = g_console_field_width;
+		Hist_Clear( &historyEditLines[i] );
 	}
 	CL_LoadConsoleHistory( );
 

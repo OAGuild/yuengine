@@ -27,7 +27,7 @@ key up events are sent even if in console mode
 
 */
 
-field_t	historyEditLines[COMMAND_HISTORY];
+hist_t	historyEditLines[COMMAND_HISTORY];
 
 int			nextHistoryLine;		// the last line in the history buffer, not masked
 int			historyLine;	// the line being displayed from history buffer
@@ -1618,7 +1618,7 @@ void CL_LoadConsoleHistory( void )
 		memmove( &historyEditLines[ 0 ], &historyEditLines[ i + 1 ],
 				numLines * sizeof( field_t ) );
 		for( i = numLines; i < COMMAND_HISTORY; i++ )
-			Field_Clear( &historyEditLines[ i ] );
+			Hist_Clear( &historyEditLines[ i ] );
 
 		historyLine = nextHistoryLine = numLines;
 	}

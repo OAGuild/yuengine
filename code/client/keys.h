@@ -39,10 +39,15 @@ void Field_BigDraw( field_t *edit, int x, int y, int width, qboolean showCursor,
 #define		COMMAND_HISTORY		32
 extern	int nextHistoryLine;
 extern	int historyLine;
-extern	field_t	historyEditLines[COMMAND_HISTORY];
+extern	hist_t	historyEditLines[COMMAND_HISTORY];
 
 extern	field_t	g_consoleField;
 extern	field_t	chatField;
+
+extern	undobuf_t	g_consoleUndobuf;
+extern	undobuf_t	chatUndobuf;
+extern	yankbuf_t	yankbuf;
+
 extern	int				anykeydown;
 
 enum {

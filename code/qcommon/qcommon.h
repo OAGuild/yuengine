@@ -771,12 +771,19 @@ typedef struct {
 typedef struct {
 	int		cursor;
 	int		scroll;
+	char	buffer[MAX_EDIT_LINE];
+} hist_t;
+
+typedef struct {
+	int		cursor;
+	int		scroll;
 	int		widthInChars;
 	char	buffer[MAX_EDIT_LINE];
 	undobuf_t	*undobuf;
 	yankbuf_t	*yankbuf;
 } field_t;
 
+void Hist_Clear( hist_t *edit );
 void Field_Clear( field_t *edit );
 void Field_AutoComplete( field_t *edit );
 void Field_CompleteKeyname( void );

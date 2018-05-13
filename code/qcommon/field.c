@@ -253,9 +253,20 @@ ret:
 
 /*
 ===========================================
-command line completion
+Clear functions
 ===========================================
 */
+
+/*
+==================
+Hist_Clear
+==================
+*/
+void Hist_Clear(hist_t *edit) {
+	memset(edit->buffer, 0, MAX_EDIT_LINE);
+	edit->cursor = 0;
+	edit->scroll = 0;
+}
 
 /*
 ==================
@@ -269,6 +280,12 @@ void Field_Clear( field_t *edit ) {
 	if (edit->undobuf)
 		edit->undobuf->size = 0;
 }
+
+/*
+===========================================
+command line completion
+===========================================
+*/
 
 static const char *completionString;
 static char shortestMatch[MAX_TOKEN_CHARS];
