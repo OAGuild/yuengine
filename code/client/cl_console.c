@@ -220,6 +220,53 @@ void Con_AcceptLine( void )
 	}							// may take some time
 }
 
+/*
+================
+Con_FromId
+================
+*/
+console_t *Con_FromId( const char *id ) {
+	char *p;
+	int n = strtod(id, &p);
+
+	if (*p == '\0') // it is a number argument
+	{
+		if ( n < 0 || n >= NUM_CON )
+		{
+			Com_Printf ("Invalid console index %d (valid values "
+					"are 0-%d)\n", n, NUM_CON - 1);
+			return NULL;
+		}
+		return &cons[n];
+	}
+
+	// check if the name matches any of the console names
+	for ( int i = 0 ; i < NUM_CON ; ++i )
+	{
+		if ( Q_stricmp( id, conNames[i] ) == 0 )
+		{
+			return &cons[i];
+		}
+	}
+
+	Com_Printf ("Invalid console name %s\n", id);
+	return NULL;
+}
+
+void Con_OpenConsoleTab_f( void )
+{
+	if ( Cmd_Argc() != 2 ) {
+		Com_Printf ("usage: openconsole <console>\n");
+		return;
+
+	}
+	console_t *con = Con_FromId( Cmd_Argv( 1 ) );
+	if (con) {
+		activeCon = con;
+	}
+
+	Key_SetCatcher( Key_GetCatcher( ) | KEYCATCH_CONSOLE );
+}
 
 /*
 ================
@@ -243,7 +290,6 @@ void Con_ToggleConsole_f( void )
 	Con_ClearNotify ();
 
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
-
 }
 
 /*
@@ -483,36 +529,8 @@ void Con_Dump_f (void)
 	}
 	else if (Cmd_Argc() == 3)
 	{
-		const char *arg = Cmd_Argv( 2 );
-		char *p;
-		int n = strtod(arg, &p);
-
-		if (*p == '\0') // it is a number argument
-		{
-			if ( n < 0 || n >= NUM_CON ) {
-				Com_Printf ("Invalid console index %d (valid values are "
-						"0-%d)\n", n, NUM_CON - 1);
-				return;
-			}
-			con = &cons[n];
-		}
-		else
-		{
-			// check if the name matches any of the console names
-			for ( i = 0 ; i < NUM_CON ; ++i )
-			{
-				if ( Q_stricmp( arg, conNames[i] ) == 0 )
-				{
-					con = &cons[i];
-					break;
-				}
-			}
-
-			// we didn't find a console
-			if ( i == NUM_CON ) {
-				Com_Printf ("Invalid console name %s\n", arg);
-				return;
-			}
+		if (!(con = Con_FromId(Cmd_Argv(2)))) {
+			return; // quit if invalid console
 		}
 	}
 	else
@@ -639,7 +657,6 @@ void Con_NextConsoleTab() {
 	Con_SwitchConsoleTab( (NUM_CON + activeCon - cons + 1) % NUM_CON );
 }
 
-
 /*
 ================
 Con_CheckResize
@@ -736,6 +753,7 @@ void Con_Init (void) {
 	CL_LoadConsoleHistory( );
 
 	Cmd_AddCommand ("toggleconsole", Con_ToggleConsole_f);
+	Cmd_AddCommand ("openconsole", Con_OpenConsoleTab_f);
 	Cmd_AddCommand ("togglemenu", Con_ToggleMenu_f);
 	Cmd_AddCommand ("messagemode", Con_MessageMode_f);
 	Cmd_AddCommand ("messagemode2", Con_MessageMode2_f);
