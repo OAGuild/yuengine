@@ -417,6 +417,7 @@ void CON_Init( void )
 	tc.c_iflag &= ~(ISTRIP | INPCK);
 	tc.c_cc[VMIN] = 1;
 	tc.c_cc[VTIME] = 0;
+	tc.c_cc[VINTR] = 0;
 	tcsetattr (STDIN_FILENO, TCSADRAIN, &tc);
 	ttycon_on = qtrue;
 	ttycon_hide = 1; // Mark as hidden, so prompt is shown in CON_Show
@@ -591,7 +592,7 @@ char *CON_Input( void )
 				CON_RedrawEditLine();
 				return NULL;
 			}
-			if (key == CTRL('C')) { // (doesn't work on most terminals)
+			if (key == CTRL('C')) {
 				Field_Clear( &TTY_con );
 				CON_RedrawEditLine();
 				return NULL;
