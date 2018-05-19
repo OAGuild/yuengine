@@ -67,6 +67,8 @@ static undobuf_t TTY_undobuf;
 static yankbuf_t TTY_yankbuf;
 static field_t TTY_con = { .undobuf = &TTY_undobuf, .yankbuf = &TTY_yankbuf };
 
+static int prev_cur_y, prev_cur_x = 1;
+
 // This is somewhat of aduplicate of the graphical console history
 // but it's safer more modular to have our own here
 #define CON_HISTORY 32
@@ -308,7 +310,6 @@ static void CON_RedrawEditLine( void )
 	int buf_y = (len - 1) / width;
 	int buf_x = (len - 1) % width;
 
-	static int prev_cur_y, prev_cur_x;
 	int cur_y = (TTY_con.cursor + 1) / width;
 	int cur_x = (TTY_con.cursor + 1) % width;
 
@@ -576,6 +577,9 @@ char *CON_Input( void )
 				size = write(STDOUT_FILENO, &key, 1);
 				size = write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, strlen(TTY_CONSOLE_PROMPT));
 #endif
+				prev_cur_y = 0;
+				prev_cur_x = 1;
+
 				return text;
 			}
 			if (key == CTRL('V')) {
