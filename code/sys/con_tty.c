@@ -32,6 +32,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <signal.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/time.h>
 
 /*
@@ -288,26 +289,74 @@ Redraws the entire edit line
 */
 static void CON_RedrawEditLine( void )
 {
-	// should be enough to fit the entire output
-	char output[
-		MAX_EDIT_LINE + sizeof "\r\x1B[K" TTY_CONSOLE_PROMPT + 8
-	];
+	struct winsize size;
+	ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
+	int width = size.ws_col;
 
-	// how many columns the cursor should move back after edit line has been
-	// drawn
-	int curmove = strlen(TTY_con.buffer) + 1 - TTY_con.cursor;
-	if (curmove < 0) {
-		curmove = 0;
+	size_t len = strlen(TTY_con.buffer) + sizeof TTY_CONSOLE_PROMPT - 1;
+	int buf_y = (len - 1) / width;
+	int buf_x = (len - 1) % width;
+
+	static int prev_cur_y, prev_cur_x;
+	int cur_y = (TTY_con.cursor + 1) / width;
+	int cur_x = (TTY_con.cursor + 1) % width;
+
+	// move to first line of previously inserted text
+	if (prev_cur_y > 0)
+	{
+		char s[1024];
+		size_t n = Com_sprintf(s, sizeof s, "\x1b[%dA", prev_cur_y);
+		write(STDOUT_FILENO, s, n);
 	}
 
-	// fill output buffer with the output
-	Com_sprintf(
-		output, sizeof(output),
-		"\r\x1B[2K" TTY_CONSOLE_PROMPT "%s \x1B[%dD",
-		TTY_con.buffer, curmove);
+	// move to first column of previously inserted text
+	if (prev_cur_x > 0)
+	{
+		char s[1024];
+		size_t n = Com_sprintf(s, sizeof s, "\x1b[%dD", prev_cur_x);
+		write(STDOUT_FILENO, s, n);
+	}
 
-	// write output
-	write(STDOUT_FILENO, output, strlen(output));
+	// clear from cursor to end of screen
+	char s[] = "\x1b[J";
+	write(STDOUT_FILENO, s, sizeof s - 1);
+
+	// write the prompt, the buffer, and a space (so the line wraps down)
+	write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, sizeof TTY_CONSOLE_PROMPT - 1);
+	write(STDOUT_FILENO, TTY_con.buffer, len);
+
+	// write space if at end of line (to create new line below for the
+	// cursor)
+	if (buf_x == width - 1)
+	{
+		char spc = ' ';
+		write(STDOUT_FILENO, &spc, 1);
+	}
+
+	// move to the line where the cursor is
+	if (buf_y - cur_y > 0)
+	{
+		char s[1024];
+		size_t n = Com_sprintf(s, sizeof s, "\x1b[%dA", buf_y - cur_y);
+		write(STDOUT_FILENO, s, n);
+	}
+
+	// move to column where the cursor is
+	if (buf_x - cur_x + 1 > 0)
+	{
+		char s[1024];
+		size_t n = Com_sprintf(s, sizeof s, "\x1b[%dD", buf_x - cur_x + 1);
+		write(STDOUT_FILENO, s, n);
+	}
+	else if (buf_x - cur_x + 1 < 0)
+	{
+		char s[1024];
+		size_t n = Com_sprintf(s, sizeof s, "\x1b[%dC", -(buf_x - cur_x + 1));
+		write(STDOUT_FILENO, s, n);
+	}
+
+	// save cursor position for next call
+	prev_cur_y = cur_y, prev_cur_x = cur_x;
 }
 
 /*
