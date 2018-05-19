@@ -36,6 +36,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <sys/time.h>
 
 /*
+ * the amount of characters to read for tty console input
+ */
+#define TTY_INPUT_BUFER_SIZE 32
+
+/*
 =============================================================
 tty console routines
 
@@ -459,6 +464,34 @@ void CON_HistNext( void )
 	CON_FlushIn();
 }
 
+typedef struct {
+	ssize_t i;
+	ssize_t n;
+	char data[TTY_INPUT_BUFER_SIZE];
+} tty_input_buffer;
+
+/*
+================
+getch_from_buf
+
+get a keyboard input character from the tty input buffer
+
+returns character if it is available or -1 if not available
+================
+ */
+int getch_from_buf(tty_input_buffer *buf)
+{
+	if (++buf->i >= buf->n) {
+		buf->i = 0;
+		buf->n = read(STDIN_FILENO, &buf->data, sizeof buf->data);
+		if (buf->n < 0) {
+			buf->n = 0;
+			return -1;
+		}
+	}
+	return buf->data[buf->i];
+}
+
 /*
 ==================
 CON_Input
@@ -470,14 +503,13 @@ char *CON_Input( void )
 	static char text[MAX_EDIT_LINE];
 	static qboolean lastchar_esc = qfalse;
 	qboolean meta_on;
-	int avail;
-	char key;
+	static tty_input_buffer input = { 0 };
+	int key;
 	size_t UNUSED_VAR size;
 
 	if(ttycon_on)
 	{
-		avail = read(STDIN_FILENO, &key, 1);
-		if (avail != -1)
+		while ((key = getch_from_buf(&input)) != -1)
 		{
 			meta_on = lastchar_esc;
 			lastchar_esc = qfalse;
@@ -667,23 +699,32 @@ char *CON_Input( void )
 			// VT 100 keys
 			if (meta_on && (key == '[' || key == 'O')) {
 				qboolean ctrl_on = qfalse;
-				avail = read(STDIN_FILENO, &key, 1);
+				if ((key = getch_from_buf(&input)) == -1)
+					return NULL;
 
 				// check if the user pressed CTRL-<ARROW>
 				if (key == '1') {
-					avail = read(STDIN_FILENO, &key, 1);
+					if ((key = getch_from_buf(&input)) == -1)
+						return NULL;
+
 					if (key == ';') {
-						avail = read(STDIN_FILENO, &key, 1);
+						if ((key = getch_from_buf(&input)) == -1)
+							return NULL;
+
 						if (key == '5') {
 							ctrl_on = qtrue;
-							avail = read(STDIN_FILENO, &key, 1);
+
+							if ((key = getch_from_buf(&input)) == -1)
+								return NULL;
 						}
 					}
 				}
 
 				// check for DELETE key
 				if (key == '3') {
-					avail = read(STDIN_FILENO, &key, 1);
+					if ((key = getch_from_buf(&input)) == -1)
+						return NULL;
+
 					if (key == '~') {
 						Field_DeleteChar( &TTY_con );
 						CON_RedrawEditLine();
@@ -691,37 +732,35 @@ char *CON_Input( void )
 					}
 				}
 
-				if (avail != -1) {
-					switch (key) {
-						case 'A': // up arrow
-							CON_HistPrev();
-							return NULL;
-						case 'B': // down arrow
-							CON_HistNext();
-							return NULL;
-						case 'D': // left arrow
-							if (ctrl_on)
-								Field_MoveBackWord( &TTY_con );
-							else
-								Field_MoveBackChar( &TTY_con );
-							CON_RedrawEditLine();
-							return NULL;
-						case 'C': // right arrow
-							if (ctrl_on)
-								Field_MoveForwardWord( &TTY_con );
-							else
-								Field_MoveForwardChar( &TTY_con );
-							CON_RedrawEditLine();
-							return NULL;
-						case 'H': // home
-							Field_MoveLineStart( &TTY_con );
-							CON_RedrawEditLine();
-							return NULL;
-						case 'F': // end
-							Field_MoveLineEnd( &TTY_con );
-							CON_RedrawEditLine();
-							return NULL;
-					}
+				switch (key) {
+					case 'A': // up arrow
+						CON_HistPrev();
+						return NULL;
+					case 'B': // down arrow
+						CON_HistNext();
+						return NULL;
+					case 'D': // left arrow
+						if (ctrl_on)
+							Field_MoveBackWord( &TTY_con );
+						else
+							Field_MoveBackChar( &TTY_con );
+						CON_RedrawEditLine();
+						return NULL;
+					case 'C': // right arrow
+						if (ctrl_on)
+							Field_MoveForwardWord( &TTY_con );
+						else
+							Field_MoveForwardChar( &TTY_con );
+						CON_RedrawEditLine();
+						return NULL;
+					case 'H': // home
+						Field_MoveLineStart( &TTY_con );
+						CON_RedrawEditLine();
+						return NULL;
+					case 'F': // end
+						Field_MoveLineEnd( &TTY_con );
+						CON_RedrawEditLine();
+						return NULL;
 				}
 			}
 
