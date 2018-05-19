@@ -55,7 +55,7 @@ cvar_t		*con_conspeed;
 cvar_t		*con_autoclear;
 cvar_t		*con_notifytime;
 
-void HistToField( field_t *field, hist_t *hist ) {
+static void HistToField( field_t *field, hist_t *hist ) {
 	field->cursor = hist->cursor;
 	field->scroll = hist->scroll;
 	field->widthInChars = g_console_field_width;
@@ -64,7 +64,7 @@ void HistToField( field_t *field, hist_t *hist ) {
 	Q_strncpyz( field->buffer, hist->buffer, MAX_EDIT_LINE );
 }
 
-void FieldToHist( hist_t *hist, field_t *field ) {
+static void FieldToHist( hist_t *hist, field_t *field ) {
 	hist->cursor = field->cursor;
 	hist->scroll = field->scroll;
 	Q_strncpyz( hist->buffer, field->buffer, MAX_EDIT_LINE );

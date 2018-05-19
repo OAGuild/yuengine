@@ -63,12 +63,14 @@ static int TTY_eof;
 
 static struct termios TTY_tc;
 
-static field_t TTY_con;
+static undobuf_t TTY_undobuf;
+static yankbuf_t TTY_yankbuf;
+static field_t TTY_con = { .undobuf = &TTY_undobuf, .yankbuf = &TTY_yankbuf };
 
 // This is somewhat of aduplicate of the graphical console history
 // but it's safer more modular to have our own here
 #define CON_HISTORY 32
-static field_t ttyEditLines[ CON_HISTORY ];
+static hist_t ttyEditLines[ CON_HISTORY ];
 static int hist_current = -1, hist_count = 0;
 
 #ifndef DEDICATED
@@ -78,6 +80,21 @@ static int hist_current = -1, hist_count = 0;
 #else
 #define TTY_CONSOLE_PROMPT "]"
 #endif
+
+static void HistToField( field_t *field, hist_t *hist ) {
+	field->cursor = hist->cursor;
+	field->scroll = 0;
+	field->widthInChars = 0;
+	field->undobuf = &TTY_undobuf;
+	field->yankbuf = &TTY_yankbuf;
+	Q_strncpyz( field->buffer, hist->buffer, MAX_EDIT_LINE );
+}
+
+static void FieldToHist( hist_t *hist, field_t *field ) {
+	hist->cursor = field->cursor;
+	hist->scroll = 0;
+	Q_strncpyz( hist->buffer, field->buffer, MAX_EDIT_LINE );
+}
 
 /*
 ==================
@@ -154,29 +171,18 @@ static void CON_Hide( void )
 ==================
 CON_Show
 
-Show the current line
-FIXME need to position the cursor if needed?
+Show the current line.
+
+Doesn't actually show the current line anymore, that is done by
+CON_RedrawEditLine which should be called instead when that is desired.
 ==================
 */
 static void CON_Show( void )
 {
 	if( ttycon_on )
 	{
-		int i;
-
 		assert(ttycon_hide>0);
 		ttycon_hide--;
-		if (ttycon_hide == 0)
-		{
-			if (TTY_con.cursor)
-			{
-				write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, strlen(TTY_CONSOLE_PROMPT));
-				for (i=0; i<TTY_con.cursor; i++)
-				{
-					write(STDOUT_FILENO, TTY_con.buffer+i, 1);
-				}
-			}
-		}
 	}
 }
 
@@ -221,7 +227,7 @@ void Hist_Add(field_t *field)
 	{
 		ttyEditLines[i] = ttyEditLines[i-1];
 	}
-	ttyEditLines[0] = *field;
+	FieldToHist(ttyEditLines, field);
 	if (hist_count<CON_HISTORY)
 	{
 		hist_count++;
@@ -234,7 +240,7 @@ void Hist_Add(field_t *field)
 Hist_Prev
 ==================
 */
-field_t *Hist_Prev( void )
+hist_t *Hist_Prev( void )
 {
 	int hist_prev;
 	assert(hist_count <= CON_HISTORY);
@@ -255,7 +261,7 @@ field_t *Hist_Prev( void )
 Hist_Next
 ==================
 */
-field_t *Hist_Next( void )
+hist_t *Hist_Next( void )
 {
 	assert(hist_count <= CON_HISTORY);
 	assert(hist_count >= 0);
@@ -439,11 +445,11 @@ static void CON_ClearScreen( void )
 
 void CON_HistPrev( void )
 {
-	field_t *history = Hist_Prev();
+	hist_t *history = Hist_Prev();
 	if (history)
 	{
 		CON_Hide();
-		TTY_con = *history;
+		HistToField(&TTY_con, history);
 		CON_Show();
 	}
 	CON_FlushIn();
@@ -451,11 +457,11 @@ void CON_HistPrev( void )
 
 void CON_HistNext( void )
 {
-	field_t *history = Hist_Next();
+	hist_t *history = Hist_Next();
 	CON_Hide();
 	if (history)
 	{
-		TTY_con = *history;
+		HistToField(&TTY_con, history);
 	}
 	else
 	{
@@ -679,10 +685,12 @@ char *CON_Input( void )
 			}
 			if (key == CTRL('N')) {
 				CON_HistNext();
+				CON_RedrawEditLine();
 				return NULL;
 			}
 			if (key == CTRL('P')) {
 				CON_HistPrev();
+				CON_RedrawEditLine();
 				return NULL;
 			}
 			if (key == CTRL('L')) {
@@ -840,4 +848,6 @@ void CON_Print( const char *msg )
 		// Defer calling CON_Show
 		ttycon_show_overdue++;
 	}
+
+	CON_RedrawEditLine();
 }
