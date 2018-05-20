@@ -169,14 +169,13 @@ static void CON_Hide( void )
 	}
 }
 
+static void CON_RedrawEditLine( void );
+
 /*
 ==================
 CON_Show
 
 Show the current line.
-
-Doesn't actually show the current line anymore, that is done by
-CON_RedrawEditLine which should be called instead when that is desired.
 ==================
 */
 static void CON_Show( void )
@@ -185,6 +184,11 @@ static void CON_Show( void )
 	{
 		assert(ttycon_hide>0);
 		ttycon_hide--;
+
+		if (ttycon_hide == 0)
+		{
+			CON_RedrawEditLine();
+		}
 	}
 }
 
@@ -707,6 +711,7 @@ char *CON_Input( void )
 					Field_AutoComplete( &TTY_con );
 					CON_Show();
 				}
+				CON_RedrawEditLine();
 				return NULL;
 			}
 
@@ -853,6 +858,4 @@ void CON_Print( const char *msg )
 		// Defer calling CON_Show
 		ttycon_show_overdue++;
 	}
-
-	CON_RedrawEditLine();
 }

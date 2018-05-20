@@ -24,7 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 
 // time that it takes for a notify line to fade away
-#define NOTIFY_FADE_TIME 250.0f
+#define NOTIFY_FADE_TIME 500.0f
 
 // time that console tab blinks when it receives a message
 #define NOTIFY_BLINK_TIME 250.0f
@@ -1052,7 +1052,7 @@ void Con_DrawInput (void) {
 
 	y = activeCon->vislines - ( SMALLCHAR_HEIGHT * 2 );
 
-	re.SetColor( activeCon->color );
+	re.SetColor( g_color_table[7] );
 
 	SCR_DrawSmallChar( activeCon->xadjust + 1 * SMALLCHAR_WIDTH, y, ']' );
 
@@ -1105,7 +1105,10 @@ void Con_DrawNotify (console_t *con)
 
 		re.SetColor( g_color_table[currentColor] );
 
-		v += (fade / 2.0f) * SMALLCHAR_HEIGHT;
+		if (fade > 1.0f)
+			v += SMALLCHAR_HEIGHT;
+		else
+			v += fade * SMALLCHAR_HEIGHT;
 
 		text = con->text + (i % con->totallines)*con->linewidth;
 
@@ -1183,7 +1186,9 @@ void Con_DrawSolidConsole( float frac ) {
 		lines = cls.glconfig.vidHeight * activeCon->userFrac;
 		fade = frac / activeCon->userFrac;
 	} else if ( cl_consoleType->value >= 3 ) {
-		float f = activeCon->userFrac - (1.0f - frac / activeCon->userFrac) / 4.0f;
+		float f = activeCon->userFrac - 0.25f + 0.25f * frac / activeCon->userFrac;
+		if (f < 0.0f)
+			f = 0.0f;
 		y = f * SCREEN_HEIGHT;
 		lines = f * cls.glconfig.vidHeight;
 		fade = frac / activeCon->userFrac;
@@ -1378,36 +1383,27 @@ void Con_RunConsole (void) {
 	else
 		activeCon->finalFrac = 0;				// none visible
 
-	if (cl_consoleType->value < 3) {
-		// scroll towards the destination height
-		if (activeCon->finalFrac < activeCon->displayFrac)
-		{
+	// scroll towards the destination height
+	if (activeCon->finalFrac < activeCon->displayFrac)
+	{
+		// accelerate console when fading is active
+		if (cl_consoleType->value < 3)
 			activeCon->displayFrac -= con_conspeed->value*cls.realFrametime*0.001;
-			if (activeCon->finalFrac > activeCon->displayFrac)
-				activeCon->displayFrac = activeCon->finalFrac;
-
-		}
-		else if (activeCon->finalFrac > activeCon->displayFrac)
-		{
-			activeCon->displayFrac += con_conspeed->value*cls.realFrametime*0.001;
-			if (activeCon->finalFrac < activeCon->displayFrac)
-				activeCon->displayFrac = activeCon->finalFrac;
-		}
-	} else {
-		// scroll towards the destination height
-		if (activeCon->finalFrac < activeCon->displayFrac)
-		{
+		else
 			activeCon->displayFrac -= activeCon->userFrac * con_conspeed->value*cls.realFrametime*0.002;
-			if (activeCon->finalFrac > activeCon->displayFrac)
-				activeCon->displayFrac = activeCon->finalFrac;
+		if (activeCon->finalFrac > activeCon->displayFrac)
+			activeCon->displayFrac = activeCon->finalFrac;
 
-		}
-		else if (activeCon->finalFrac > activeCon->displayFrac)
-		{
+	}
+	else if (activeCon->finalFrac > activeCon->displayFrac)
+	{
+		// accelerate console when fading is active
+		if (cl_consoleType->value < 3)
+			activeCon->displayFrac += con_conspeed->value*cls.realFrametime*0.001;
+		else
 			activeCon->displayFrac += activeCon->userFrac * con_conspeed->value*cls.realFrametime*0.002;
-			if (activeCon->finalFrac < activeCon->displayFrac)
-				activeCon->displayFrac = activeCon->finalFrac;
-		}
+		if (activeCon->finalFrac < activeCon->displayFrac)
+			activeCon->displayFrac = activeCon->finalFrac;
 	}
 }
 

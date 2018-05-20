@@ -387,6 +387,8 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
 	}
 
+	re.SetColor( g_color_table[7] );
+
 	// draw the cursor
 	if ( showCursor ) {
 		if ( (int)( cls.realtime >> 8 ) & 1 ) {
