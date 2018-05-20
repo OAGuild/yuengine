@@ -306,12 +306,13 @@ static void CON_RedrawEditLine( void )
 	ioctl(STDOUT_FILENO,TIOCGWINSZ,&size);
 	int width = size.ws_col;
 
-	size_t len = strlen(TTY_con.buffer) + sizeof TTY_CONSOLE_PROMPT - 1;
+	size_t buflen = strlen(TTY_con.buffer);
+	size_t len = buflen + sizeof TTY_CONSOLE_PROMPT - 1;
 	int buf_y = (len - 1) / width;
 	int buf_x = (len - 1) % width;
 
-	int cur_y = (TTY_con.cursor + 1) / width;
-	int cur_x = (TTY_con.cursor + 1) % width;
+	int cur_y = (TTY_con.cursor + sizeof TTY_CONSOLE_PROMPT - 1) / width;
+	int cur_x = (TTY_con.cursor + sizeof TTY_CONSOLE_PROMPT - 1) % width;
 
 	// move to first line of previously inserted text
 	if (prev_cur_y > 0)
@@ -335,7 +336,7 @@ static void CON_RedrawEditLine( void )
 
 	// write the prompt, the buffer, and a space (so the line wraps down)
 	write(STDOUT_FILENO, TTY_CONSOLE_PROMPT, sizeof TTY_CONSOLE_PROMPT - 1);
-	write(STDOUT_FILENO, TTY_con.buffer, len);
+	write(STDOUT_FILENO, TTY_con.buffer, buflen);
 
 	// write space if at end of line (to create new line below for the
 	// cursor)

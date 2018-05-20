@@ -380,10 +380,8 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 
 	// draw it
 	if ( size == SMALLCHAR_WIDTH ) {
-		float	color[4];
-
-		color[0] = color[1] = color[2] = color[3] = 1.0;
-		SCR_DrawSmallStringExt( x, y, str, color, qfalse, noColorEscape );
+		SCR_DrawSmallStringExt( x, y, str, g_color_table[7], qfalse,
+				noColorEscape );
 	} else {
 		// draw big string with drop shadow
 		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
@@ -1351,6 +1349,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// console key is hardcoded, so the user can never unbind it
 	if( key == K_CONSOLE || ( keys[K_SHIFT].down && key == K_ESCAPE ) )
 	{
+		if (!(Key_GetCatcher( ) & K_CONSOLE) ) {
+			Con_SetFrac(cl_consoleHeight->value);
+			if ( key == K_CONSOLE && (keys[K_SHIFT].down || keys[K_ALT].down) )
+				Con_SetFrac(1.0f);
+		}
 		Con_ToggleConsole_f ();
 		Key_ClearStates ();
 		return;

@@ -23,6 +23,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 
+// time that it takes for a notify line to fade away
+#define NOTIFY_FADE_TIME 250.0f
+
+// time that console tab blinks when it receives a message
+#define NOTIFY_BLINK_TIME 250.0f
 
 int g_console_field_width = 78;
 
@@ -1071,11 +1076,11 @@ void Con_DrawNotify (console_t *con)
 	int		time;
 	int		skip;
 	int		currentColor;
+	int		notifytime = con_notifytime->value * 1000;
 
 	currentColor = 7;
-	re.SetColor( g_color_table[currentColor] );
 
-	v = 2;
+	v = -SMALLCHAR_HEIGHT;
 	for (i= con->current-NUM_CON_TIMES+1 ; i<=con->current ; i++)
 	{
 		if (i < 0)
@@ -1084,8 +1089,24 @@ void Con_DrawNotify (console_t *con)
 		if (time == 0)
 			continue;
 		time = cls.realtime - time;
-		if (time > con_notifytime->value*1000)
+		if (time > notifytime)
 			continue;
+
+		float fade = 2.0f;
+
+		if (notifytime - time < NOTIFY_FADE_TIME * 2.0f) {
+			fade = (notifytime - time) / (float)NOTIFY_FADE_TIME;
+		}
+
+		if (fade > 1.0f)
+			color_table_alpha( fade - 1.0f );
+		else
+			color_table_alpha( 0.0f );
+
+		re.SetColor( g_color_table[currentColor] );
+
+		v += (fade / 2.0f) * SMALLCHAR_HEIGHT;
+
 		text = con->text + (i % con->totallines)*con->linewidth;
 
 		if (cl.snap.ps.pm_type != PM_INTERMISSION && Key_GetCatcher( ) & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
@@ -1102,9 +1123,12 @@ void Con_DrawNotify (console_t *con)
 			}
 			SCR_DrawSmallChar( cl_conXOffset->integer + con->xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 		}
-
-		v += SMALLCHAR_HEIGHT;
 	}
+
+	if (v < 0)
+		v = 0;
+
+	color_table_alpha( 1.0f );
 
 	re.SetColor( NULL );
 
@@ -1151,8 +1175,23 @@ void Con_DrawSolidConsole( float frac ) {
 	int				lines;
 //	qhandle_t		conShader;
 	int				currentColor;
+	vec4_t			color;
+	float			fade = 1.0f;
 
-	lines = cls.glconfig.vidHeight * frac;
+	if ( cl_consoleType->value == 3 ) {
+		y = activeCon->userFrac * SCREEN_HEIGHT;
+		lines = cls.glconfig.vidHeight * activeCon->userFrac;
+		fade = frac / activeCon->userFrac;
+	} else if ( cl_consoleType->value >= 3 ) {
+		float f = activeCon->userFrac - (1.0f - frac / activeCon->userFrac) / 4.0f;
+		y = f * SCREEN_HEIGHT;
+		lines = f * cls.glconfig.vidHeight;
+		fade = frac / activeCon->userFrac;
+	} else	{
+		y = frac * SCREEN_HEIGHT;
+		lines = cls.glconfig.vidHeight * frac;
+	}
+
 	if (lines <= 0)
 		return;
 
@@ -1164,13 +1203,32 @@ void Con_DrawSolidConsole( float frac ) {
 	SCR_AdjustFrom640( &activeCon->xadjust, NULL, NULL, NULL );
 
 	// draw the background
-	y = frac * SCREEN_HEIGHT;
 	if ( y < 1 ) {
 		y = 0;
 	}
 	else {
-		SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.consoleShader );
+		if ( cl_consoleType->integer ) {
+			color[0] = cl_consoleColor[0]->value;
+			color[1] = cl_consoleColor[1]->value;
+			color[2] = cl_consoleColor[2]->value;
+			color[3] = fade * cl_consoleColor[3]->value;
+			re.SetColor( color );
+		}
+		if ( cl_consoleType->integer >= 2 ) {
+			SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.whiteShader );
+		} else {
+			SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.consoleShader );
+		}
 	}
+
+	color[0] = 1;
+	color[1] = 0;
+	color[2] = 0;
+	if( !cl_consoleType->integer )
+		color[3] = fade;
+	SCR_FillRect( 0, y, SCREEN_WIDTH, 2, color );
+
+	color_table_alpha( fade );
 
 	// draw the text
 	activeCon->vislines = lines;
@@ -1225,8 +1283,6 @@ void Con_DrawSolidConsole( float frac ) {
 	// draw the input prompt, user text, and cursor if desired
 	Con_DrawInput ();
 
-	re.SetColor( NULL );
-
 	// draw the version number
 	re.SetColor( g_color_table[1] );
 	i = strlen( Q3_VERSION );
@@ -1251,22 +1307,30 @@ void Con_DrawSolidConsole( float frac ) {
 					name, g_color_table[0], qfalse, qtrue);
 		} else {
 			// draw notify blinking
+			int activeConNum = activeCon - cons;
 
-			vec4_t color;
-			memcpy(color, g_color_table[conColors[x]], sizeof color);
+			if ( activeConNum != CON_ALL && x != CON_ALL && activeConNum != x ) {
+				vec4_t color;
+				memcpy(color, g_color_table[conColors[x]], sizeof color);
 
-			color[3] = (250 - (cls.realtime - cons[x].lasttime)) / 250.0;
-			if (color[3] < 0) {
-				color[3] = 0.0;
+				color[3] = ((float)NOTIFY_BLINK_TIME - (cls.realtime - cons[x].lasttime)) / NOTIFY_BLINK_TIME;
+				if (color[3] < 0) {
+					color[3] = 0.0;
+				}
+
+				SCR_FillRectNoAdjust(horOffset, vertOffset, tabWidth,
+						SMALLCHAR_HEIGHT, color);
 			}
 
-			SCR_FillRectNoAdjust(horOffset, vertOffset, tabWidth,
-					SMALLCHAR_HEIGHT, color);
 			SCR_DrawSmallStringExt(horOffset + SMALLCHAR_WIDTH, vertOffset,
 					name, g_color_table[conColors[x]], qfalse, qtrue);
 		}
 		horOffset += tabWidth;
 	}
+
+	re.SetColor( NULL );
+
+	color_table_alpha( 1.0f );
 }
 
 
@@ -1310,25 +1374,58 @@ Scroll it up or down
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
-		activeCon->finalFrac = 0.5;		// half screen
+		activeCon->finalFrac = activeCon->userFrac;		// half screen
 	else
 		activeCon->finalFrac = 0;				// none visible
 
-	// scroll towards the destination height
-	if (activeCon->finalFrac < activeCon->displayFrac)
-	{
-		activeCon->displayFrac -= con_conspeed->value*cls.realFrametime*0.001;
-		if (activeCon->finalFrac > activeCon->displayFrac)
-			activeCon->displayFrac = activeCon->finalFrac;
-
-	}
-	else if (activeCon->finalFrac > activeCon->displayFrac)
-	{
-		activeCon->displayFrac += con_conspeed->value*cls.realFrametime*0.001;
+	if (cl_consoleType->value < 3) {
+		// scroll towards the destination height
 		if (activeCon->finalFrac < activeCon->displayFrac)
-			activeCon->displayFrac = activeCon->finalFrac;
-	}
+		{
+			activeCon->displayFrac -= con_conspeed->value*cls.realFrametime*0.001;
+			if (activeCon->finalFrac > activeCon->displayFrac)
+				activeCon->displayFrac = activeCon->finalFrac;
 
+		}
+		else if (activeCon->finalFrac > activeCon->displayFrac)
+		{
+			activeCon->displayFrac += con_conspeed->value*cls.realFrametime*0.001;
+			if (activeCon->finalFrac < activeCon->displayFrac)
+				activeCon->displayFrac = activeCon->finalFrac;
+		}
+	} else {
+		// scroll towards the destination height
+		if (activeCon->finalFrac < activeCon->displayFrac)
+		{
+			activeCon->displayFrac -= activeCon->userFrac * con_conspeed->value*cls.realFrametime*0.002;
+			if (activeCon->finalFrac > activeCon->displayFrac)
+				activeCon->displayFrac = activeCon->finalFrac;
+
+		}
+		else if (activeCon->finalFrac > activeCon->displayFrac)
+		{
+			activeCon->displayFrac += activeCon->userFrac * con_conspeed->value*cls.realFrametime*0.002;
+			if (activeCon->finalFrac < activeCon->displayFrac)
+				activeCon->displayFrac = activeCon->finalFrac;
+		}
+	}
+}
+
+/*
+==================
+Con_SetFrac
+==================
+*/
+void Con_SetFrac(const float conFrac)
+{
+	for (int i = 0; i < NUM_CON; ++i) {
+		// clamp the value
+		if (conFrac > 1.0f) {
+			cons[i].userFrac = 1.0f;
+		} else {
+			cons[i].userFrac = conFrac;
+		}
+	}
 }
 
 

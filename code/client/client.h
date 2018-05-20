@@ -50,7 +50,7 @@ Console
 ==============================================================================
 */
 
-#define	NUM_CON_TIMES 4
+#define	NUM_CON_TIMES 14
 
 #define		CON_TEXTSIZE	32768
 
@@ -69,6 +69,7 @@ typedef struct {
 
 	float	displayFrac;	// aproaches finalFrac at scr_conspeed
 	float	finalFrac;		// 0.0 to 1.0 lines of console to display
+	float	userFrac;		// user configuration
 
 	int		vislines;		// in scanlines
 
@@ -482,6 +483,11 @@ extern	cvar_t	*cl_autoRecordDemo;
 
 extern	cvar_t	*cl_consoleKeys;
 
+extern cvar_t *cl_consoleType;
+extern cvar_t *cl_consoleColor[4];
+
+extern cvar_t *cl_consoleHeight;
+
 #ifdef USE_MUMBLE
 extern	cvar_t	*cl_useMumble;
 extern	cvar_t	*cl_mumbleScale;
@@ -619,6 +625,8 @@ void Con_HistNext (field_t *edit);
 void Con_HistAbort (void);
 void Con_HistAdd (field_t *edit);
 void Con_AcceptLine (void);
+
+void Con_SetFrac( float conFrac );
 
 void CL_LoadConsoleHistory( void );
 void CL_SaveConsoleHistory( void );
