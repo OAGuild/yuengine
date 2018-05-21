@@ -24,6 +24,8 @@ following:
 - Additional keyboard editing shortcuts for editing text fields
 - Improved line-editing in TTY console
 - Tabbed console with filtered messages
+- Notify line fade away effect
+- Console styles
 
 Compilation instructions
 ------------------------
@@ -348,6 +350,40 @@ The `condump`-command takes an optional parameter specifying which console to
 dump text from.  The parameter can be the index (starting at 0) of the console,
 or the name of the console.  If this optional parameter is omitted, then the
 `all` console is assumed.
+
+Notify line fade effect
+-----------------------
+
+When a notify line is disappearing, it will fade away the notify lines below it
+will move up to take its place.  This is only a visual effect, but it is quite
+nice.
+
+Customizable console height
+---------------------------
+
+The console height can be changed using `cl_consoleHeight` which is a value
+between `0.0` and `1.0` where `1.0` means that the console takes up the entire
+screen.  The default value is `0.5`.
+
+Pressing console key while holding SHIFT or ALT will open the console with a
+height of `1.0`.
+
+Console styles
+--------------
+
+It is possible to change the looks of the game console using the cvar
+`cl_consoleType`.  When the cvar is set to `0`, the console will look like it
+normally does, with a background image and a red border.  When the cvar is set
+to `1`, the console will look like `0`, but the transparency of the border is
+changed using `cl_consoleColorAlpha` (this mode is here for compatibility with
+the official OpenArena engine).  When the cvar is set to `2` the background of
+the console is the color specified by `cl_consoleColorRed`,
+`cl_consoleColorGreen` and `cl_consoleColorBlue`, and the transparency is
+specified by `cl_consoleColorAlpha`.  When the cvar is set to `3`, the console
+will look like in `2`, but instead of dropping down/up it will fade in/out.
+When the cvar is set to `4`, the console will look like in `2`, but the console
+will both fade in/out and drop down/up.  The modes `3` and `4` are new in Yu
+Engine, the other modes exist also in the official OpenArena engine.
 
 Other documentation
 -------------------
