@@ -50,7 +50,7 @@ Console
 ==============================================================================
 */
 
-#define	NUM_CON_TIMES 14
+#define	NUM_CON_TIMES 8
 
 #define		CON_TEXTSIZE	32768
 

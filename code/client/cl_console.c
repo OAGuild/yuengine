@@ -24,10 +24,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "client.h"
 
 // time that it takes for a notify line to fade away
-#define NOTIFY_FADE_TIME 500.0f
+#define NOTIFY_FADE_TIME 500
 
 // time that console tab blinks when it receives a message
-#define NOTIFY_BLINK_TIME 250.0f
+#define NOTIFY_BLINK_TIME 250
 
 int g_console_field_width = 78;
 
@@ -1076,7 +1076,7 @@ void Con_DrawNotify (console_t *con)
 	int		time;
 	int		skip;
 	int		currentColor;
-	int		notifytime = con_notifytime->value * 1000;
+	int		notifytime = con_notifytime->value * 1000 + 2 * (int)NOTIFY_FADE_TIME;
 
 	currentColor = 7;
 
