@@ -356,7 +356,8 @@ Notify line fade effect
 
 When a notify line is disappearing, it will fade away the notify lines below it
 will move up to take its place.  This is only a visual effect, but it is quite
-nice.
+nice.  The time it takes for a line to fade away is determined by the cvar
+`con_notifyFadeTime`.
 
 Customizable console height
 ---------------------------

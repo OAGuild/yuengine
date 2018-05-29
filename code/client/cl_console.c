@@ -23,9 +23,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "client.h"
 
-// time that it takes for a notify line to fade away
-#define NOTIFY_FADE_TIME 500
-
 // time that console tab blinks when it receives a message
 #define NOTIFY_BLINK_TIME 250
 
@@ -59,6 +56,7 @@ console_t	*activeCon = cons;
 cvar_t		*con_conspeed;
 cvar_t		*con_autoclear;
 cvar_t		*con_notifytime;
+cvar_t		*con_notifyFadeTime;
 
 static void HistToField( field_t *field, hist_t *hist ) {
 	field->cursor = hist->cursor;
@@ -747,6 +745,7 @@ void Con_Init (void) {
 	int		i;
 
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
+	con_notifyFadeTime = Cvar_Get ("con_notifyFadeTime", "0.25", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 	con_autoclear = Cvar_Get("con_autoclear", "1", CVAR_ARCHIVE);
 
@@ -1076,7 +1075,8 @@ void Con_DrawNotify (console_t *con)
 	int		time;
 	int		skip;
 	int		currentColor;
-	int		notifytime = con_notifytime->value * 1000 + 2 * (int)NOTIFY_FADE_TIME;
+	float		fadeTime = con_notifyFadeTime->value * 1000;
+	int		notifytime = con_notifytime->value * 1000 + 2 * fadeTime;
 
 	currentColor = 7;
 
@@ -1094,8 +1094,8 @@ void Con_DrawNotify (console_t *con)
 
 		float fade = 2.0f;
 
-		if (notifytime - time < NOTIFY_FADE_TIME * 2.0f) {
-			fade = (notifytime - time) / (float)NOTIFY_FADE_TIME;
+		if (notifytime - time < fadeTime * 2.0f) {
+			fade = (notifytime - time) / fadeTime;
 		}
 
 		if (fade > 1.0f)
