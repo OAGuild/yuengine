@@ -52,7 +52,7 @@ Compilation instructions
      gamecode files.  By default it will be `/usr/local/games/openarena` if you
      haven't set it.  Note that the OpenArena gamecode shipped with Debian
      GNU/Linux packages does not work with Yu Engine.  Instead you can download
-     the gamecode for OpenArena 0.8.8 [on the official website][oa-download].
+     the gamecode for OpenArena 0.8.8 on [the official website][oa-download].
      This will get you a zip file with multiple things, just copy the `baseoa`
      directory to the directory you want use as `COPYDIR`.
   2. Run `make copyfiles`.
@@ -63,7 +63,7 @@ install `mingw-w64`. Thereafter cross compiling is simply a case running
 `PLATFORM=mingw32 ARCH=x86 make` in place of `make`. ARCH may also be set to
 x86\_64.
 
-[baseoa-download]: http://openarena.ws/download.php
+[oa-download]: http://openarena.ws/download.php
 
 Build options
 -------------
