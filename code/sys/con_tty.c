@@ -796,8 +796,6 @@ char *CON_Input( void )
 		fd_set  fdset;
 		struct timeval timeout;
 
-		Com_Printf("EOF\n");
-
 		FD_ZERO(&fdset);
 		FD_SET(STDIN_FILENO, &fdset); // stdin
 		timeout.tv_sec = 0;
