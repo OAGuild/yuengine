@@ -267,14 +267,7 @@ static keyNum_t IN_TranslateSDLToQ3Key( SDL_Keysym *keysym, qboolean down )
 			case SDLK_LGUI:         key = K_SUPER;         break;
 #endif
 
-			// Using RALT as ALT causes problems for keyboard
-			// layouts using RALT as ALTGR.  For that reason we
-			// don't recognize RALT as ALT.
-			//
-			// Hacky solution, which makes binding RALT impossible.
-			// If someone finds a way to solve that, feel free to
-			// fix it.
-			case SDLK_RALT:      /* key = K_ALT; */        break;
+			case SDLK_RALT:
 			case SDLK_LALT:         key = K_ALT;           break;
 
 			case SDLK_KP_5:         key = K_KP_5;          break;
